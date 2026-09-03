@@ -1,9 +1,18 @@
 #include "system_manager.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #include "core/logging/logger.h"
 #include "core/system/system_info.h"
 #include "core/monitoring/temperature/temperature_monitor.h"
 #include "core/monitoring/uptime/uptime_monitor.h"
+
+#include "wifi/wifi_manager/wifi_manager.h"
+#include "wifi/scanner/wifi_scanner.h"
+#include "wifi/analyzer/wifi_analyzer.h"
+
+#include "network/ap/ap_manager/ap_manager.h"
 
 void SystemManager::init()
 {
@@ -12,6 +21,9 @@ void SystemManager::init()
     // ----------------------------------------
 
     Logger::init();
+
+    // Give USB Serial/JTAG time to enumerate during development.
+    vTaskDelay(pdMS_TO_TICKS(3000));
 
     LOG_INFO(
         SYSTEM,
@@ -66,6 +78,58 @@ void SystemManager::init()
         (unsigned long)uptime_hours,
         (unsigned long)uptime_minutes,
         (unsigned long)uptime_secs);
+
+    // ----------------------------------------
+    // Wi-Fi initialization
+    // ----------------------------------------
+
+    if (!WiFiManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "Wi-Fi initialization failed");
+
+        return;
+    }
+
+    // ----------------------------------------
+    // Access Point
+    // ----------------------------------------
+
+    if (!APManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "Access Point initialization failed");
+
+        return;
+    }
+
+    // ----------------------------------------
+    // Wi-Fi scan
+    // ----------------------------------------
+
+    if (!WiFiScanner::scan())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "Wi-Fi scan failed");
+
+        return;
+    }
+
+    // ----------------------------------------
+    // Wi-Fi analysis
+    // ----------------------------------------
+
+    if (!WiFiAnalyzer::analyze())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "Wi-Fi analysis failed");
+
+        return;
+    }
 
     // ----------------------------------------
     // Initialization complete
