@@ -7,12 +7,14 @@
 #include "core/system/system_info.h"
 #include "core/monitoring/temperature/temperature_monitor.h"
 #include "core/monitoring/uptime/uptime_monitor.h"
+#include "core/config/config_manager.h"
 
 #include "wifi/wifi_manager/wifi_manager.h"
 #include "wifi/scanner/wifi_scanner.h"
 #include "wifi/analyzer/wifi_analyzer.h"
 
 #include "network/ap/ap_manager/ap_manager.h"
+#include "network/webserver/web_server.h"
 
 void SystemManager::init()
 {
@@ -93,6 +95,19 @@ void SystemManager::init()
     }
 
     // ----------------------------------------
+    // Configuration
+    // ----------------------------------------
+
+    if (!ConfigManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "Configuration initialization failed");
+
+        return;
+    }
+
+    // ----------------------------------------
     // Access Point
     // ----------------------------------------
 
@@ -101,6 +116,19 @@ void SystemManager::init()
         LOG_ERROR(
             SYSTEM,
             "Access Point initialization failed");
+
+        return;
+    }
+
+    // ----------------------------------------
+    // HTTP server
+    // ----------------------------------------
+
+    if (!WebServer::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "HTTP server initialization failed");
 
         return;
     }

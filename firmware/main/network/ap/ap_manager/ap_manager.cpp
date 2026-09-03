@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "core/logging/logger.h"
+#include "core/config/config_manager.h"
 
 #include "esp_err.h"
 #include "esp_netif.h"
@@ -10,13 +11,8 @@
 
 namespace
 {
-    constexpr char AP_SSID[] = "CyberSwissKnife";
-    constexpr char AP_PASSWORD[] = "csk-local-2026";
-
-    constexpr uint8_t AP_CHANNEL = 1;
-    constexpr uint8_t AP_MAX_CONNECTIONS = 4;
-
     esp_netif_t *ap_netif = nullptr;
+
     bool initialized = false;
 }
 
@@ -30,6 +26,13 @@ bool APManager::init()
 
         return true;
     }
+
+    // ----------------------------------------
+    // Get AP configuration
+    // ----------------------------------------
+
+    const APConfig &config =
+        ConfigManager::get_ap_config();
 
     // ----------------------------------------
     // Create default AP network interface
@@ -55,22 +58,22 @@ bool APManager::init()
 
     strncpy(
         reinterpret_cast<char *>(ap_config.ap.ssid),
-        AP_SSID,
-        sizeof(ap_config.ap.ssid));
+        config.ssid,
+        sizeof(ap_config.ap.ssid) - 1);
 
     strncpy(
         reinterpret_cast<char *>(ap_config.ap.password),
-        AP_PASSWORD,
-        sizeof(ap_config.ap.password));
+        config.password,
+        sizeof(ap_config.ap.password) - 1);
 
     ap_config.ap.ssid_len =
-        strlen(AP_SSID);
+        strlen(config.ssid);
 
     ap_config.ap.channel =
-        AP_CHANNEL;
+        config.channel;
 
     ap_config.ap.max_connection =
-        AP_MAX_CONNECTIONS;
+        config.max_connections;
 
     ap_config.ap.authmode =
         WIFI_AUTH_WPA2_PSK;
@@ -152,6 +155,10 @@ bool APManager::init()
         return false;
     }
 
+    // ----------------------------------------
+    // Log configuration
+    // ----------------------------------------
+
     LOG_INFO(
         NETWORK,
         "Access Point initialized");
@@ -159,12 +166,17 @@ bool APManager::init()
     LOG_INFO(
         NETWORK,
         "SSID: %s",
-        AP_SSID);
+        config.ssid);
 
     LOG_INFO(
         NETWORK,
         "Channel: %u",
-        AP_CHANNEL);
+        config.channel);
+
+    LOG_INFO(
+        NETWORK,
+        "Max connections: %u",
+        config.max_connections);
 
     LOG_INFO(
         NETWORK,
@@ -180,6 +192,10 @@ bool APManager::init()
         NETWORK,
         "Subnet: " IPSTR,
         IP2STR(&ip_info.netmask));
+
+    // ----------------------------------------
+    // Initialization complete
+    // ----------------------------------------
 
     initialized = true;
 

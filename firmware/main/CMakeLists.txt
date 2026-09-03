@@ -11,6 +11,8 @@ idf_component_register(
         "wifi/analyzer/wifi_analyzer.cpp"
         "wifi/data/wifi_data.cpp"
         "network/ap/ap_manager/ap_manager.cpp"
+        "core/config/config_manager.cpp"
+        "network/webserver/web_server.cpp"
     INCLUDE_DIRS
         "."
     REQUIRES
@@ -20,4 +22,5 @@ idf_component_register(
         esp_event
         esp_netif
         nvs_flash
+        esp_http_server
 )
