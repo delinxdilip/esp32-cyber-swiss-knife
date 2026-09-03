@@ -1,0 +1,13 @@
+idf_component_register(
+    SRCS
+        "main.cpp"
+        "core/system/system_manager.cpp"
+        "core/system/system_info.cpp"
+        "core/logging/logger.cpp"
+        "core/monitoring/temperature/temperature_monitor.cpp"
+        "core/monitoring/uptime/uptime_monitor.cpp"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        esp_driver_tsens
+)
