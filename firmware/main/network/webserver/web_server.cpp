@@ -8,6 +8,7 @@
 #include "esp_http_server.h"
 #include "esp_spiffs.h"
 #include "esp_vfs.h"
+#include "esp_wifi.h"
 
 #include "core/config/config_manager.h"
 #include "core/json/json_builder.h"
@@ -339,6 +340,213 @@ namespace
         return httpd_resp_sendstr(
             request,
             "{\"success\":true}");
+    }
+
+    esp_err_t get_ap_handler(
+        httpd_req_t *request)
+    {
+        if (!APManager::is_initialized())
+        {
+            return send_json_error(
+                request,
+                "503 Service Unavailable",
+                "Access point is not initialized");
+        }
+
+        wifi_config_t ap_config = {};
+
+        esp_err_t result =
+            esp_wifi_get_config(
+                WIFI_IF_AP,
+                &ap_config);
+
+        if (result != ESP_OK)
+        {
+            LOG_ERROR(
+                WEB,
+                "Failed to get AP configuration: %s",
+                esp_err_to_name(result));
+
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Failed to get access point configuration");
+        }
+
+        wifi_sta_list_t station_list = {};
+
+        result =
+            esp_wifi_ap_get_sta_list(
+                &station_list);
+
+        if (result != ESP_OK)
+        {
+            LOG_ERROR(
+                WEB,
+                "Failed to get AP station list: %s",
+                esp_err_to_name(result));
+
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Failed to get connected clients");
+        }
+
+        esp_netif_t *ap_netif =
+            esp_netif_get_handle_from_ifkey(
+                "WIFI_AP_DEF");
+
+        if (ap_netif == nullptr)
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "AP network interface is unavailable");
+        }
+
+        esp_netif_ip_info_t ip_info = {};
+
+        result =
+            esp_netif_get_ip_info(
+                ap_netif,
+                &ip_info);
+
+        if (result != ESP_OK)
+        {
+            LOG_ERROR(
+                WEB,
+                "Failed to get AP IP information: %s",
+                esp_err_to_name(result));
+
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Failed to get access point IP information");
+        }
+
+        uint8_t mac[6] = {};
+
+        result =
+            esp_wifi_get_mac(
+                WIFI_IF_AP,
+                mac);
+
+        if (result != ESP_OK)
+        {
+            LOG_ERROR(
+                WEB,
+                "Failed to get AP MAC address: %s",
+                esp_err_to_name(result));
+
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Failed to get access point MAC address");
+        }
+
+        char ip_address[16];
+
+        std::snprintf(
+            ip_address,
+            sizeof(ip_address),
+            "%u.%u.%u.%u",
+            static_cast<unsigned int>(
+                ip_info.ip.addr & 0xFF),
+            static_cast<unsigned int>(
+                (ip_info.ip.addr >> 8) & 0xFF),
+            static_cast<unsigned int>(
+                (ip_info.ip.addr >> 16) & 0xFF),
+            static_cast<unsigned int>(
+                (ip_info.ip.addr >> 24) & 0xFF));
+
+        char mac_address[18];
+
+        std::snprintf(
+            mac_address,
+            sizeof(mac_address),
+            "%02X:%02X:%02X:%02X:%02X:%02X",
+            mac[0],
+            mac[1],
+            mac[2],
+            mac[3],
+            mac[4],
+            mac[5]);
+
+        char response[768];
+
+        JsonBuilder json(
+            response,
+            sizeof(response));
+
+        bool success = true;
+
+        success =
+            success &&
+            json.begin_object();
+
+        success =
+            success &&
+            json.add_string(
+                "status",
+                "running");
+
+        success =
+            success &&
+            json.add_string(
+                "ssid",
+                reinterpret_cast<const char *>(
+                    ap_config.ap.ssid));
+
+        success =
+            success &&
+            json.add_string(
+                "ip_address",
+                ip_address);
+
+        success =
+            success &&
+            json.add_uint(
+                "channel",
+                ap_config.ap.channel);
+
+        success =
+            success &&
+            json.add_uint(
+                "clients",
+                station_list.num);
+
+        success =
+            success &&
+            json.add_uint(
+                "max_connections",
+                ap_config.ap.max_connection);
+
+        success =
+            success &&
+            json.add_string(
+                "mac_address",
+                mac_address);
+
+        success =
+            success &&
+            json.end_object();
+
+        if (!success || !json.valid())
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Access point response too large");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_send(
+            request,
+            json.data(),
+            json.size());
     }
 
     esp_err_t get_wifi_handler(
@@ -1291,6 +1499,18 @@ bool WebServer::init()
     httpd_register_uri_handler(
         server,
         &config_post);
+
+    httpd_uri_t ap_get =
+    {
+        .uri = "/api/wifi/ap",
+        .method = HTTP_GET,
+        .handler = get_ap_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &ap_get);
 
     httpd_uri_t wifi_get =
     {

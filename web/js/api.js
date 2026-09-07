@@ -28,6 +28,10 @@ const CyberSwissKnifeAPI = {
         return this.request("/api/wifi");
     },
 
+    async getWifiAP() {
+        return this.request("/api/wifi/ap");
+    },
+
     async getWifiNetworks() {
         return this.request("/api/wifi/networks");
     },

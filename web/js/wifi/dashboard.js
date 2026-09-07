@@ -2,20 +2,41 @@
     "use strict";
 
     const elements = {
-        statusDot: document.getElementById("wifi-status-dot"),
-        statusText: document.getElementById("wifi-status-text"),
+        statusDot:
+            document.getElementById("wifi-status-dot"),
 
-        apSsid: document.getElementById("ap-ssid"),
-        apStatus: document.getElementById("ap-status"),
-        apIp: document.getElementById("ap-ip"),
-        apChannel: document.getElementById("ap-channel"),
-        apClients: document.getElementById("ap-clients"),
+        statusText:
+            document.getElementById("wifi-status-text"),
 
-        networkCount: document.getElementById("network-count"),
-        openCount: document.getElementById("open-count"),
-        hiddenCount: document.getElementById("hidden-count"),
-        strongestRssi: document.getElementById("strongest-rssi"),
-        weakestRssi: document.getElementById("weakest-rssi"),
+        apSsid:
+            document.getElementById("ap-ssid"),
+
+        apStatus:
+            document.getElementById("ap-status"),
+
+        apIp:
+            document.getElementById("ap-ip"),
+
+        apChannel:
+            document.getElementById("ap-channel"),
+
+        apClients:
+            document.getElementById("ap-clients"),
+
+        networkCount:
+            document.getElementById("network-count"),
+
+        openCount:
+            document.getElementById("open-count"),
+
+        hiddenCount:
+            document.getElementById("hidden-count"),
+
+        strongestRssi:
+            document.getElementById("strongest-rssi"),
+
+        weakestRssi:
+            document.getElementById("weakest-rssi"),
 
         latestNetworkName:
             document.getElementById("latest-network-name"),
@@ -33,7 +54,6 @@
             document.getElementById("latest-network-bssid")
     };
 
-
     function setStatus(online) {
         elements.statusDot.classList.remove(
             "online",
@@ -48,7 +68,6 @@
             online ? "ONLINE" : "OFFLINE";
     }
 
-
     function valueOrDash(value) {
         if (
             value === undefined ||
@@ -61,7 +80,6 @@
         return value;
     }
 
-
     function formatRssi(value) {
         if (
             value === undefined ||
@@ -73,24 +91,43 @@
         return `${value} dBm`;
     }
 
+    function updateAccessPoint(data) {
+        if (!data) {
+            elements.apSsid.textContent = "—";
 
-    function updateAccessPoint() {
-        /*
-         * AP runtime information is intentionally left empty.
-         *
-         * These fields will be connected to a dedicated
-         * firmware/API implementation later.
-         */
+            elements.apStatus.textContent =
+                "Access point information unavailable.";
 
-        elements.apSsid.textContent = "—";
-        elements.apStatus.textContent =
-            "Access point information will be available here.";
+            elements.apIp.textContent = "—";
+            elements.apChannel.textContent = "—";
+            elements.apClients.textContent = "—";
 
-        elements.apIp.textContent = "—";
-        elements.apChannel.textContent = "—";
-        elements.apClients.textContent = "—";
+            return;
+        }
+
+        elements.apSsid.textContent =
+            valueOrDash(data.ssid);
+
+        if (data.status === "running") {
+            elements.apStatus.textContent =
+                "Access point is running.";
+        } else {
+            elements.apStatus.textContent =
+                valueOrDash(data.status);
+        }
+
+        elements.apIp.textContent =
+            valueOrDash(data.ip_address);
+
+        elements.apChannel.textContent =
+            valueOrDash(data.channel);
+
+        elements.apClients.textContent =
+            data.clients !== undefined &&
+            data.max_connections !== undefined
+                ? `${data.clients} / ${data.max_connections}`
+                : valueOrDash(data.clients);
     }
-
 
     function updateScanSummary(data) {
         elements.networkCount.textContent =
@@ -109,21 +146,26 @@
             formatRssi(data.weakest_rssi);
     }
 
-
     function updateLatestNetwork(data) {
         if (
             !data ||
             !Array.isArray(data.networks) ||
             data.networks.length === 0
         ) {
-            elements.latestNetworkName.textContent = "—";
+            elements.latestNetworkName.textContent =
+                "—";
 
             elements.latestNetworkDetails.textContent =
                 "No scanned networks available.";
 
-            elements.latestNetworkRssi.textContent = "—";
-            elements.latestNetworkChannel.textContent = "—";
-            elements.latestNetworkBssid.textContent = "—";
+            elements.latestNetworkRssi.textContent =
+                "—";
+
+            elements.latestNetworkChannel.textContent =
+                "—";
+
+            elements.latestNetworkBssid.textContent =
+                "—";
 
             return;
         }
@@ -148,22 +190,36 @@
             valueOrDash(network.bssid);
     }
 
+    async function loadAccessPoint() {
+        try {
+            const ap =
+                await CyberSwissKnifeAPI.getWifiAP();
+
+            updateAccessPoint(ap);
+
+            return true;
+        } catch (error) {
+            console.warn(
+                "Unable to load access point information:",
+                error
+            );
+
+            updateAccessPoint(null);
+
+            return false;
+        }
+    }
 
     async function loadDashboard() {
-        /*
-         * Keep AP fields as placeholders until the firmware
-         * exposes dedicated AP runtime information.
-         */
-        updateAccessPoint();
+        const apOnline =
+            await loadAccessPoint();
 
         try {
             const wifi =
                 await CyberSwissKnifeAPI.getWifi();
 
-            setStatus(true);
-
+            setStatus(apOnline);
             updateScanSummary(wifi);
-
         } catch (error) {
             console.error(
                 "Unable to load Wi-Fi summary:",
@@ -172,20 +228,27 @@
 
             setStatus(false);
 
-            elements.networkCount.textContent = "—";
-            elements.openCount.textContent = "—";
-            elements.hiddenCount.textContent = "—";
-            elements.strongestRssi.textContent = "—";
-            elements.weakestRssi.textContent = "—";
-        }
+            elements.networkCount.textContent =
+                "—";
 
+            elements.openCount.textContent =
+                "—";
+
+            elements.hiddenCount.textContent =
+                "—";
+
+            elements.strongestRssi.textContent =
+                "—";
+
+            elements.weakestRssi.textContent =
+                "—";
+        }
 
         try {
             const networks =
                 await CyberSwissKnifeAPI.getWifiNetworks();
 
             updateLatestNetwork(networks);
-
         } catch (error) {
             console.warn(
                 "Unable to load Wi-Fi networks:",
@@ -195,7 +258,6 @@
             updateLatestNetwork(null);
         }
     }
-
 
     loadDashboard();
 })();
