@@ -7,6 +7,8 @@
 #include "esp_err.h"
 #include "esp_wifi.h"
 
+#include "wifi/analyzer/wifi_analyzer.h"
+
 namespace
 {
     constexpr uint16_t MAX_NETWORKS = 32;
@@ -22,29 +24,29 @@ namespace
     {
         switch (auth_mode)
         {
-            case WIFI_AUTH_OPEN:
-                return WiFiSecurity::OPEN;
+        case WIFI_AUTH_OPEN:
+            return WiFiSecurity::OPEN;
 
-            case WIFI_AUTH_WEP:
-                return WiFiSecurity::WEP;
+        case WIFI_AUTH_WEP:
+            return WiFiSecurity::WEP;
 
-            case WIFI_AUTH_WPA_PSK:
-                return WiFiSecurity::WPA;
+        case WIFI_AUTH_WPA_PSK:
+            return WiFiSecurity::WPA;
 
-            case WIFI_AUTH_WPA2_PSK:
-                return WiFiSecurity::WPA2;
+        case WIFI_AUTH_WPA2_PSK:
+            return WiFiSecurity::WPA2;
 
-            case WIFI_AUTH_WPA_WPA2_PSK:
-                return WiFiSecurity::WPA_WPA2;
+        case WIFI_AUTH_WPA_WPA2_PSK:
+            return WiFiSecurity::WPA_WPA2;
 
-            case WIFI_AUTH_WPA3_PSK:
-                return WiFiSecurity::WPA3;
+        case WIFI_AUTH_WPA3_PSK:
+            return WiFiSecurity::WPA3;
 
-            case WIFI_AUTH_WPA2_WPA3_PSK:
-                return WiFiSecurity::WPA2_WPA3;
+        case WIFI_AUTH_WPA2_WPA3_PSK:
+            return WiFiSecurity::WPA2_WPA3;
 
-            default:
-                return WiFiSecurity::UNKNOWN;
+        default:
+            return WiFiSecurity::UNKNOWN;
         }
     }
 }
@@ -96,6 +98,7 @@ bool WiFiScanner::scan()
      * Wi-Fi interface configured for both
      * station and access-point operation.
      */
+
     esp_err_t err =
         esp_wifi_set_mode(WIFI_MODE_APSTA);
 
@@ -107,6 +110,7 @@ bool WiFiScanner::scan()
             esp_err_to_name(err));
 
         scanning = false;
+
         return false;
     }
 
@@ -116,6 +120,7 @@ bool WiFiScanner::scan()
      * true means this function waits until
      * the scan is complete.
      */
+
     err =
         esp_wifi_scan_start(
             &scan_config,
@@ -129,6 +134,7 @@ bool WiFiScanner::scan()
             esp_err_to_name(err));
 
         scanning = false;
+
         return false;
     }
 
@@ -146,6 +152,7 @@ bool WiFiScanner::scan()
             esp_err_to_name(err));
 
         scanning = false;
+
         return false;
     }
 
@@ -160,6 +167,7 @@ bool WiFiScanner::scan()
      * The scanner intentionally keeps a fixed
      * memory footprint for V1.
      */
+
     uint16_t stored_count =
         discovered_count;
 
@@ -182,6 +190,7 @@ bool WiFiScanner::scan()
                 "Failed to allocate scan records");
 
             scanning = false;
+
             return false;
         }
 
@@ -203,6 +212,7 @@ bool WiFiScanner::scan()
             delete[] records;
 
             scanning = false;
+
             return false;
         }
 
@@ -217,6 +227,7 @@ bool WiFiScanner::scan()
          * Replace the previous scan results
          * only after a successful scan.
          */
+
         memset(
             networks,
             0,
@@ -244,6 +255,7 @@ bool WiFiScanner::scan()
              * of 33 bytes including room for the
              * null terminator.
              */
+
             memcpy(
                 network.ssid,
                 record.ssid,
@@ -298,6 +310,22 @@ bool WiFiScanner::scan()
         WIFI,
         "Wi-Fi scan complete: %u networks stored",
         network_count);
+
+    /*
+     * Refresh analyzer state from the newly
+     * completed scan.
+     *
+     * WiFiAnalyzer reads the results directly
+     * from WiFiScanner, so this must happen
+     * after the scanner has replaced its
+     * previous results.
+     */
+    if (!WiFiAnalyzer::analyze())
+    {
+        LOG_WARN(
+            WIFI,
+            "Wi-Fi analysis failed after scan");
+    }
 
     return true;
 }
