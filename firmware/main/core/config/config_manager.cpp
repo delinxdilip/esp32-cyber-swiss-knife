@@ -1,143 +1,113 @@
 #include "config_manager.h"
 
-#include <string.h>
+#include <cstring>
+
+#include "nvs.h"
 
 #include "core/logging/logger.h"
 
-#include "nvs.h"
-#include "nvs_flash.h"
-
 namespace
 {
-    constexpr char NVS_NAMESPACE[] = "config";
+    constexpr const char *NVS_NAMESPACE =
+        "config";
 
-    constexpr char KEY_SSID[] = "ap_ssid";
-    constexpr char KEY_PASSWORD[] = "ap_password";
-    constexpr char KEY_MAX_CONN[] = "ap_max_conn";
-    constexpr char KEY_CHANNEL[] = "ap_channel";
+    constexpr const char *KEY_AP_SSID =
+        "ap_ssid";
 
-    constexpr char DEFAULT_SSID[] =
-        "CyberSwissKnife";
+    constexpr const char *KEY_AP_PASSWORD =
+        "ap_password";
 
-    constexpr char DEFAULT_PASSWORD[] =
-        "csk-local-2026";
+    constexpr const char *KEY_AP_MAX_CONN =
+        "ap_max_conn";
 
-    constexpr uint8_t DEFAULT_MAX_CONNECTIONS = 4;
-    constexpr uint8_t DEFAULT_CHANNEL = 1;
-
-    void set_defaults(APConfig &config)
-    {
-        memset(
-            &config,
-            0,
-            sizeof(APConfig));
-
-        strncpy(
-            config.ssid,
-            DEFAULT_SSID,
-            sizeof(config.ssid) - 1);
-
-        strncpy(
-            config.password,
-            DEFAULT_PASSWORD,
-            sizeof(config.password) - 1);
-
-        config.max_connections =
-            DEFAULT_MAX_CONNECTIONS;
-
-        config.channel =
-            DEFAULT_CHANNEL;
-    }
-
-    bool validate_config(
-        const APConfig &config)
-    {
-        if (config.ssid[0] == '\0')
-        {
-            LOG_ERROR(
-                NETWORK,
-                "AP SSID cannot be empty");
-
-            return false;
-        }
-
-        if (strlen(config.ssid) > 32)
-        {
-            LOG_ERROR(
-                NETWORK,
-                "AP SSID exceeds 32 characters");
-
-            return false;
-        }
-
-        if (strlen(config.password) < 8)
-        {
-            LOG_ERROR(
-                NETWORK,
-                "AP password must be at least 8 characters");
-
-            return false;
-        }
-
-        if (strlen(config.password) > 64)
-        {
-            LOG_ERROR(
-                NETWORK,
-                "AP password exceeds 64 characters");
-
-            return false;
-        }
-
-        if (config.max_connections == 0)
-        {
-            LOG_ERROR(
-                NETWORK,
-                "AP max connections cannot be zero");
-
-            return false;
-        }
-
-        /*
-         * ESP32 SoftAP supports up to 10 stations
-         * by default/configuration limits.
-         */
-        if (config.max_connections > 10)
-        {
-            LOG_ERROR(
-                NETWORK,
-                "AP max connections cannot exceed 10");
-
-            return false;
-        }
-
-        if (config.channel < 1 ||
-            config.channel > 13)
-        {
-            LOG_ERROR(
-                NETWORK,
-                "AP channel must be between 1 and 13");
-
-            return false;
-        }
-
-        return true;
-    }
+    constexpr const char *KEY_AP_CHANNEL =
+        "ap_channel";
 }
 
 APConfig ConfigManager::ap_config = {};
 
 bool ConfigManager::init()
 {
-    LOG_INFO(
-        NETWORK,
-        "Initializing configuration manager");
-
-    /*
-     * WiFiManager currently initializes NVS.
-     * ConfigManager assumes NVS is already initialized.
-     */
-
     return load();
+}
+
+void ConfigManager::set_defaults()
+{
+    std::memset(
+        &ap_config,
+        0,
+        sizeof(ap_config));
+
+    std::strncpy(
+        ap_config.ssid,
+        "CyberSwissKnife",
+        sizeof(ap_config.ssid) - 1);
+
+    std::strncpy(
+        ap_config.password,
+        "csk-local-2026",
+        sizeof(ap_config.password) - 1);
+
+    ap_config.max_connections = 4;
+    ap_config.channel = 1;
+}
+
+bool ConfigManager::validate(
+    const APConfig &config)
+{
+    const size_t ssid_length =
+        std::strlen(config.ssid);
+
+    const size_t password_length =
+        std::strlen(config.password);
+
+    if (ssid_length == 0 ||
+        ssid_length > 32)
+    {
+        LOG_WARN(
+            SYSTEM,
+            "Invalid AP SSID length: %u",
+            static_cast<unsigned>(
+                ssid_length));
+
+        return false;
+    }
+
+    if (password_length < 8 ||
+        password_length > 64)
+    {
+        LOG_WARN(
+            SYSTEM,
+            "Invalid AP password length");
+
+        return false;
+    }
+
+    if (config.max_connections < 1 ||
+        config.max_connections > 10)
+    {
+        LOG_WARN(
+            SYSTEM,
+            "Invalid AP max connections: %u",
+            static_cast<unsigned>(
+                config.max_connections));
+
+        return false;
+    }
+
+    if (config.channel < 1 ||
+        config.channel > 13)
+    {
+        LOG_WARN(
+            SYSTEM,
+            "Invalid AP channel: %u",
+            static_cast<unsigned>(
+                config.channel));
+
+        return false;
+    }
+
+    return true;
 }
 
 bool ConfigManager::load()
@@ -153,56 +123,42 @@ bool ConfigManager::load()
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
-            "Failed to open configuration NVS: %s",
+            SYSTEM,
+            "Failed to open config NVS: %s",
             esp_err_to_name(err));
 
         return false;
     }
 
-    size_t ssid_length =
+    size_t ssid_size =
         sizeof(ap_config.ssid);
 
-    size_t password_length =
+    size_t password_size =
         sizeof(ap_config.password);
 
-    err =
-        nvs_get_str(
-            handle,
-            KEY_SSID,
-            ap_config.ssid,
-            &ssid_length);
+    err = nvs_get_str(
+        handle,
+        KEY_AP_SSID,
+        ap_config.ssid,
+        &ssid_size);
 
     if (err == ESP_ERR_NVS_NOT_FOUND)
     {
-        LOG_INFO(
-            NETWORK,
-            "No saved configuration found");
-
-        set_defaults(ap_config);
-
         nvs_close(handle);
 
-        if (!save())
-        {
-            LOG_ERROR(
-                NETWORK,
-                "Failed to save default configuration");
-
-            return false;
-        }
+        set_defaults();
 
         LOG_INFO(
-            NETWORK,
-            "Default configuration created");
+            SYSTEM,
+            "No AP configuration found, using defaults");
 
-        return true;
+        return save();
     }
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
+            SYSTEM,
             "Failed to load AP SSID: %s",
             esp_err_to_name(err));
 
@@ -211,17 +167,16 @@ bool ConfigManager::load()
         return false;
     }
 
-    err =
-        nvs_get_str(
-            handle,
-            KEY_PASSWORD,
-            ap_config.password,
-            &password_length);
+    err = nvs_get_str(
+        handle,
+        KEY_AP_PASSWORD,
+        ap_config.password,
+        &password_size);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
+            SYSTEM,
             "Failed to load AP password: %s",
             esp_err_to_name(err));
 
@@ -230,18 +185,15 @@ bool ConfigManager::load()
         return false;
     }
 
-    uint8_t value = 0;
-
-    err =
-        nvs_get_u8(
-            handle,
-            KEY_MAX_CONN,
-            &value);
+    err = nvs_get_u8(
+        handle,
+        KEY_AP_MAX_CONN,
+        &ap_config.max_connections);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
+            SYSTEM,
             "Failed to load AP max connections: %s",
             esp_err_to_name(err));
 
@@ -250,19 +202,15 @@ bool ConfigManager::load()
         return false;
     }
 
-    ap_config.max_connections =
-        value;
-
-    err =
-        nvs_get_u8(
-            handle,
-            KEY_CHANNEL,
-            &value);
+    err = nvs_get_u8(
+        handle,
+        KEY_AP_CHANNEL,
+        &ap_config.channel);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
+            SYSTEM,
             "Failed to load AP channel: %s",
             esp_err_to_name(err));
 
@@ -271,50 +219,35 @@ bool ConfigManager::load()
         return false;
     }
 
-    ap_config.channel =
-        value;
-
     nvs_close(handle);
 
-    if (!validate_config(ap_config))
+    if (!validate(ap_config))
     {
-        LOG_ERROR(
-            NETWORK,
-            "Saved configuration is invalid");
+        LOG_WARN(
+            SYSTEM,
+            "Stored AP configuration is invalid; restoring defaults");
 
-        return false;
+        set_defaults();
+
+        return save();
     }
 
     LOG_INFO(
-        NETWORK,
-        "Configuration loaded from NVS");
-
-    LOG_INFO(
-        NETWORK,
-        "AP SSID: %s",
-        ap_config.ssid);
-
-    LOG_INFO(
-        NETWORK,
-        "AP max connections: %u",
-        ap_config.max_connections);
-
-    LOG_INFO(
-        NETWORK,
-        "AP channel: %u",
-        ap_config.channel);
+        SYSTEM,
+        "AP configuration loaded: SSID=%s, max_clients=%u, channel=%u",
+        ap_config.ssid,
+        static_cast<unsigned>(
+            ap_config.max_connections),
+        static_cast<unsigned>(
+            ap_config.channel));
 
     return true;
 }
 
 bool ConfigManager::save()
 {
-    if (!validate_config(ap_config))
+    if (!validate(ap_config))
     {
-        LOG_ERROR(
-            NETWORK,
-            "Configuration validation failed");
-
         return false;
     }
 
@@ -329,23 +262,22 @@ bool ConfigManager::save()
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
-            "Failed to open configuration NVS: %s",
+            SYSTEM,
+            "Failed to open config NVS for save: %s",
             esp_err_to_name(err));
 
         return false;
     }
 
-    err =
-        nvs_set_str(
-            handle,
-            KEY_SSID,
-            ap_config.ssid);
+    err = nvs_set_str(
+        handle,
+        KEY_AP_SSID,
+        ap_config.ssid);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
+            SYSTEM,
             "Failed to save AP SSID: %s",
             esp_err_to_name(err));
 
@@ -354,16 +286,15 @@ bool ConfigManager::save()
         return false;
     }
 
-    err =
-        nvs_set_str(
-            handle,
-            KEY_PASSWORD,
-            ap_config.password);
+    err = nvs_set_str(
+        handle,
+        KEY_AP_PASSWORD,
+        ap_config.password);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
+            SYSTEM,
             "Failed to save AP password: %s",
             esp_err_to_name(err));
 
@@ -372,16 +303,15 @@ bool ConfigManager::save()
         return false;
     }
 
-    err =
-        nvs_set_u8(
-            handle,
-            KEY_MAX_CONN,
-            ap_config.max_connections);
+    err = nvs_set_u8(
+        handle,
+        KEY_AP_MAX_CONN,
+        ap_config.max_connections);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
+            SYSTEM,
             "Failed to save AP max connections: %s",
             esp_err_to_name(err));
 
@@ -390,16 +320,15 @@ bool ConfigManager::save()
         return false;
     }
 
-    err =
-        nvs_set_u8(
-            handle,
-            KEY_CHANNEL,
-            ap_config.channel);
+    err = nvs_set_u8(
+        handle,
+        KEY_AP_CHANNEL,
+        ap_config.channel);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
+            SYSTEM,
             "Failed to save AP channel: %s",
             esp_err_to_name(err));
 
@@ -413,8 +342,8 @@ bool ConfigManager::save()
     if (err != ESP_OK)
     {
         LOG_ERROR(
-            NETWORK,
-            "Failed to commit configuration: %s",
+            SYSTEM,
+            "Failed to commit AP configuration: %s",
             esp_err_to_name(err));
 
         nvs_close(handle);
@@ -425,8 +354,8 @@ bool ConfigManager::save()
     nvs_close(handle);
 
     LOG_INFO(
-        NETWORK,
-        "Configuration saved to NVS");
+        SYSTEM,
+        "AP configuration saved");
 
     return true;
 }
@@ -439,16 +368,26 @@ const APConfig &ConfigManager::get_ap_config()
 bool ConfigManager::set_ap_config(
     const APConfig &config)
 {
-    if (!validate_config(config))
+    if (!validate(config))
     {
+        return false;
+    }
+
+    const APConfig old_config =
+        ap_config;
+
+    ap_config = config;
+
+    if (!save())
+    {
+        ap_config = old_config;
+
         LOG_ERROR(
-            NETWORK,
-            "Rejected invalid AP configuration");
+            SYSTEM,
+            "Failed to persist AP configuration; restored previous configuration");
 
         return false;
     }
 
-    ap_config = config;
-
-    return save();
+    return true;
 }

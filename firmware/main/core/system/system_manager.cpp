@@ -10,42 +10,41 @@
 #include "core/config/config_manager.h"
 
 #include "wifi/wifi_manager/wifi_manager.h"
-#include "wifi/scanner/wifi_scanner.h"
-#include "wifi/analyzer/wifi_analyzer.h"
 
 #include "network/ap/ap_manager/ap_manager.h"
 #include "network/webserver/web_server.h"
 
 void SystemManager::init()
 {
-    // ----------------------------------------
-    // Logging
-    // ----------------------------------------
-
     Logger::init();
 
-    // Give USB Serial/JTAG time to enumerate during development.
-    vTaskDelay(pdMS_TO_TICKS(3000));
+    /*
+     * Development delay.
+     *
+     * This gives the USB Serial/JTAG console
+     * time to reconnect after boot so that
+     * startup logs are visible during
+     * development.
+     */
+    vTaskDelay(
+        pdMS_TO_TICKS(3000));
 
     LOG_INFO(
         SYSTEM,
         "CyberSwissKnife System Core starting");
 
-    // ----------------------------------------
-    // System information
-    // ----------------------------------------
-
     SystemInfo::print();
 
     // ----------------------------------------
-    // Temperature monitor
+    // Temperature
     // ----------------------------------------
 
     if (TemperatureMonitor::init())
     {
         float temperature = 0.0f;
 
-        if (TemperatureMonitor::get_celsius(temperature))
+        if (TemperatureMonitor::get_celsius(
+                temperature))
         {
             LOG_INFO(
                 SYSTEM,
@@ -82,7 +81,7 @@ void SystemManager::init()
         (unsigned long)uptime_secs);
 
     // ----------------------------------------
-    // Wi-Fi initialization
+    // Wi-Fi
     // ----------------------------------------
 
     if (!WiFiManager::init())
@@ -133,35 +132,25 @@ void SystemManager::init()
         return;
     }
 
-    // ----------------------------------------
-    // Wi-Fi scan
-    // ----------------------------------------
+    /*
+     * IMPORTANT:
+     *
+     * Wi-Fi scanning is no longer performed
+     * automatically during boot.
+     *
+     * V1 performs scans only when requested
+     * through:
+     *
+     *     GET /api/wifi/scan
+     *
+     * This keeps the AP and web server usable
+     * after boot and makes the radio behavior
+     * easier for beginners to understand.
+     */
 
-    if (!WiFiScanner::scan())
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Wi-Fi scan failed");
-
-        return;
-    }
-
-    // ----------------------------------------
-    // Wi-Fi analysis
-    // ----------------------------------------
-
-    if (!WiFiAnalyzer::analyze())
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Wi-Fi analysis failed");
-
-        return;
-    }
-
-    // ----------------------------------------
-    // Initialization complete
-    // ----------------------------------------
+    LOG_INFO(
+        SYSTEM,
+        "Wi-Fi scanning is available on demand");
 
     LOG_INFO(
         SYSTEM,

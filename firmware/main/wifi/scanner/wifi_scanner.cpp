@@ -11,8 +11,11 @@ namespace
 {
     constexpr uint16_t MAX_NETWORKS = 32;
 
-    WiFiNetwork networks[MAX_NETWORKS];
+    WiFiNetwork networks[MAX_NETWORKS] = {};
+
     uint16_t network_count = 0;
+
+    bool scanning = false;
 
     WiFiSecurity convert_security(
         wifi_auth_mode_t auth_mode)
@@ -44,88 +47,39 @@ namespace
                 return WiFiSecurity::UNKNOWN;
         }
     }
-
-    const char *security_to_string(
-        WiFiSecurity security)
-    {
-        switch (security)
-        {
-            case WiFiSecurity::OPEN:
-                return "OPEN";
-
-            case WiFiSecurity::WEP:
-                return "WEP";
-
-            case WiFiSecurity::WPA:
-                return "WPA";
-
-            case WiFiSecurity::WPA2:
-                return "WPA2";
-
-            case WiFiSecurity::WPA_WPA2:
-                return "WPA/WPA2";
-
-            case WiFiSecurity::WPA3:
-                return "WPA3";
-
-            case WiFiSecurity::WPA2_WPA3:
-                return "WPA2/WPA3";
-
-            default:
-                return "UNKNOWN";
-        }
-    }
 }
 
 bool WiFiScanner::scan()
 {
+    if (scanning)
+    {
+        LOG_WARN(
+            WIFI,
+            "Wi-Fi scan already in progress");
+
+        return false;
+    }
+
+    scanning = true;
+
     LOG_INFO(
         WIFI,
         "Starting Wi-Fi scan");
 
-    // ----------------------------------------
-    // Clear previous results
-    // ----------------------------------------
-
-    network_count = 0;
-
-    // ----------------------------------------
-    // Set Wi-Fi station mode
-    // ----------------------------------------
-
-    esp_err_t err =
-        esp_wifi_set_mode(WIFI_MODE_APSTA);
-
-    if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            WIFI,
-            "Failed to set Wi-Fi APSTA mode: %s",
-            esp_err_to_name(err));
-
-        return false;
-    }
-
-    // ----------------------------------------
-    // Start Wi-Fi
-    // ----------------------------------------
-
-    err = esp_wifi_start();
-
-    if (err != ESP_OK &&
-        err != ESP_ERR_WIFI_STATE)
-    {
-        LOG_ERROR(
-            WIFI,
-            "Failed to start Wi-Fi: %s",
-            esp_err_to_name(err));
-
-        return false;
-    }
-
-    // ----------------------------------------
-    // Configure scan
-    // ----------------------------------------
+    /*
+     * The ESP32-S3 has one Wi-Fi radio.
+     *
+     * A scan temporarily moves that radio
+     * between Wi-Fi channels. Because our AP
+     * uses the same radio, clients may briefly
+     * lose connectivity during the scan.
+     *
+     * This is intentional in V1.
+     *
+     * We therefore perform scans only when
+     * explicitly requested instead of scanning
+     * continuously in the background.
+     */
 
     wifi_scan_config_t scan_config = {};
 
@@ -133,188 +87,224 @@ bool WiFiScanner::scan()
     scan_config.bssid = nullptr;
     scan_config.channel = 0;
     scan_config.show_hidden = true;
+    scan_config.scan_type = WIFI_SCAN_TYPE_ACTIVE;
+    scan_config.scan_time.active.min = 100;
+    scan_config.scan_time.active.max = 300;
 
-    // ----------------------------------------
-    // Start scan
-    // ----------------------------------------
-
-    err = esp_wifi_scan_start(
-        &scan_config,
-        true);
+    /*
+     * APSTA allows the ESP32 to keep the
+     * Wi-Fi interface configured for both
+     * station and access-point operation.
+     */
+    esp_err_t err =
+        esp_wifi_set_mode(WIFI_MODE_APSTA);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
             WIFI,
-            "Wi-Fi scan failed: %s",
+            "Failed to set APSTA mode: %s",
             esp_err_to_name(err));
 
+        scanning = false;
         return false;
     }
 
-    // ----------------------------------------
-    // Get network count
-    // ----------------------------------------
+    /*
+     * Start a blocking scan.
+     *
+     * true means this function waits until
+     * the scan is complete.
+     */
+    err =
+        esp_wifi_scan_start(
+            &scan_config,
+            true);
+
+    if (err != ESP_OK)
+    {
+        LOG_ERROR(
+            WIFI,
+            "Wi-Fi scan failed to start: %s",
+            esp_err_to_name(err));
+
+        scanning = false;
+        return false;
+    }
 
     uint16_t discovered_count = 0;
 
-    err = esp_wifi_scan_get_ap_num(
-        &discovered_count);
+    err =
+        esp_wifi_scan_get_ap_num(
+            &discovered_count);
 
     if (err != ESP_OK)
     {
         LOG_ERROR(
             WIFI,
-            "Failed to get network count: %s",
+            "Failed to get Wi-Fi scan count: %s",
             esp_err_to_name(err));
 
+        scanning = false;
         return false;
     }
 
     LOG_INFO(
         WIFI,
-        "Networks found: %u",
+        "Networks discovered: %u",
         discovered_count);
 
-    if (discovered_count == 0)
-    {
-        return true;
-    }
-
-    // ----------------------------------------
-    // Limit results to our storage capacity
-    // ----------------------------------------
-
-    uint16_t result_capacity =
+    /*
+     * Limit the number of stored networks.
+     *
+     * The scanner intentionally keeps a fixed
+     * memory footprint for V1.
+     */
+    uint16_t stored_count =
         discovered_count;
 
-    if (result_capacity > MAX_NETWORKS)
+    if (stored_count > MAX_NETWORKS)
     {
-        result_capacity = MAX_NETWORKS;
-
-        LOG_WARN(
-            WIFI,
-            "Network count exceeds storage capacity, keeping first %u",
-            MAX_NETWORKS);
+        stored_count = MAX_NETWORKS;
     }
 
-    // ----------------------------------------
-    // Allocate temporary ESP-IDF records
-    // ----------------------------------------
+    wifi_ap_record_t *records = nullptr;
 
-    wifi_ap_record_t *records =
-        new wifi_ap_record_t[discovered_count];
-
-    if (records == nullptr)
+    if (discovered_count > 0)
     {
-        LOG_ERROR(
-            WIFI,
-            "Failed to allocate Wi-Fi scan results");
+        records =
+            new wifi_ap_record_t[discovered_count];
 
-        return false;
-    }
+        if (records == nullptr)
+        {
+            LOG_ERROR(
+                WIFI,
+                "Failed to allocate scan records");
 
-    uint16_t result_count = discovered_count;
+            scanning = false;
+            return false;
+        }
 
-    // ----------------------------------------
-    // Retrieve scan results
-    // ----------------------------------------
+        uint16_t record_count =
+            discovered_count;
 
-    err = esp_wifi_scan_get_ap_records(
-        &result_count,
-        records);
+        err =
+            esp_wifi_scan_get_ap_records(
+                &record_count,
+                records);
 
-    if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            WIFI,
-            "Failed to retrieve Wi-Fi scan results: %s",
-            esp_err_to_name(err));
+        if (err != ESP_OK)
+        {
+            LOG_ERROR(
+                WIFI,
+                "Failed to get Wi-Fi records: %s",
+                esp_err_to_name(err));
+
+            delete[] records;
+
+            scanning = false;
+            return false;
+        }
+
+        stored_count = record_count;
+
+        if (stored_count > MAX_NETWORKS)
+        {
+            stored_count = MAX_NETWORKS;
+        }
+
+        /*
+         * Replace the previous scan results
+         * only after a successful scan.
+         */
+        memset(
+            networks,
+            0,
+            sizeof(networks));
+
+        network_count = 0;
+
+        for (uint16_t i = 0;
+             i < stored_count;
+             i++)
+        {
+            const wifi_ap_record_t &record =
+                records[i];
+
+            WiFiNetwork &network =
+                networks[network_count];
+
+            memset(
+                network.ssid,
+                0,
+                sizeof(network.ssid));
+
+            /*
+             * ESP-IDF provides an SSID buffer
+             * of 33 bytes including room for the
+             * null terminator.
+             */
+            memcpy(
+                network.ssid,
+                record.ssid,
+                sizeof(network.ssid) - 1);
+
+            memcpy(
+                network.bssid,
+                record.bssid,
+                sizeof(network.bssid));
+
+            network.rssi =
+                record.rssi;
+
+            network.channel =
+                record.primary;
+
+            network.hidden =
+                (record.ssid[0] == '\0');
+
+            network.security =
+                convert_security(
+                    record.authmode);
+
+            LOG_INFO(
+                WIFI,
+                "Network %u: SSID=\"%s\" RSSI=%d Channel=%u",
+                network_count,
+                network.hidden
+                    ? "<hidden>"
+                    : network.ssid,
+                network.rssi,
+                network.channel);
+
+            network_count++;
+        }
 
         delete[] records;
-
-        return false;
     }
-
-    // ----------------------------------------
-    // Convert and store results
-    // ----------------------------------------
-
-    for (uint16_t i = 0;
-         i < result_count && i < result_capacity;
-         i++)
+    else
     {
-        const wifi_ap_record_t &record =
-            records[i];
-
-        WiFiNetwork &network =
-            networks[network_count];
-
         memset(
-            &network,
+            networks,
             0,
-            sizeof(WiFiNetwork));
+            sizeof(networks));
 
-        // SSID
-        memcpy(
-            network.ssid,
-            record.ssid,
-            sizeof(network.ssid) - 1);
-
-        network.ssid[
-            sizeof(network.ssid) - 1] = '\0';
-
-        // BSSID
-        memcpy(
-            network.bssid,
-            record.bssid,
-            sizeof(network.bssid));
-
-        // Signal strength
-        network.rssi =
-            record.rssi;
-
-        // Channel
-        network.channel =
-            record.primary;
-
-        // Hidden network
-        network.hidden =
-            (record.ssid[0] == '\0');
-
-        // Security
-        network.security =
-            convert_security(record.authmode);
-
-        network_count++;
-
-        // ----------------------------------------
-        // Log network
-        // ----------------------------------------
-
-        LOG_INFO(
-            WIFI,
-            "[%u] SSID: %s | RSSI: %d dBm | CH: %u | Security: %s | Hidden: %s",
-            network_count,
-            network.ssid,
-            network.rssi,
-            network.channel,
-            security_to_string(network.security),
-            network.hidden ? "YES" : "NO");
+        network_count = 0;
     }
 
-    // ----------------------------------------
-    // Cleanup
-    // ----------------------------------------
-
-    delete[] records;
+    scanning = false;
 
     LOG_INFO(
         WIFI,
-        "Wi-Fi scan results stored: %u",
+        "Wi-Fi scan complete: %u networks stored",
         network_count);
 
     return true;
+}
+
+bool WiFiScanner::is_scanning()
+{
+    return scanning;
 }
 
 uint16_t WiFiScanner::get_count()

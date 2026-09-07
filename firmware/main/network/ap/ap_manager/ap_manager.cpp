@@ -1,18 +1,15 @@
 #include "ap_manager.h"
 
-#include <string.h>
+#include <cstring>
+
+#include "esp_wifi.h"
+#include "esp_netif.h"
 
 #include "core/logging/logger.h"
-#include "core/config/config_manager.h"
-
-#include "esp_err.h"
-#include "esp_netif.h"
-#include "esp_wifi.h"
 
 namespace
 {
     esp_netif_t *ap_netif = nullptr;
-
     bool initialized = false;
 }
 
@@ -20,54 +17,146 @@ bool APManager::init()
 {
     if (initialized)
     {
-        LOG_DEBUG(
+        LOG_WARN(
             NETWORK,
             "Access Point already initialized");
 
         return true;
     }
 
-    // ----------------------------------------
-    // Get AP configuration
-    // ----------------------------------------
-
     const APConfig &config =
         ConfigManager::get_ap_config();
 
-    // ----------------------------------------
-    // Create default AP network interface
-    // ----------------------------------------
+    if (!ConfigManager::validate(config))
+    {
+        LOG_ERROR(
+            NETWORK,
+            "Invalid AP configuration");
 
-    ap_netif =
-        esp_netif_create_default_wifi_ap();
+        return false;
+    }
+
+    /*
+     * Create the default AP network interface
+     * only once.
+     */
+    if (ap_netif == nullptr)
+    {
+        ap_netif =
+            esp_netif_create_default_wifi_ap();
+
+        if (ap_netif == nullptr)
+        {
+            LOG_ERROR(
+                NETWORK,
+                "Failed to create AP network interface");
+
+            return false;
+        }
+    }
+
+    /*
+     * Configure the AP.
+     */
+    if (!apply_config(config))
+    {
+        LOG_ERROR(
+            NETWORK,
+            "Failed to apply AP configuration");
+
+        return false;
+    }
+
+    /*
+     * IMPORTANT:
+     *
+     * esp_wifi_init() only initializes the Wi-Fi
+     * driver. The radio/AP does not actually start
+     * until esp_wifi_start() is called.
+     */
+    esp_err_t result =
+        esp_wifi_start();
+
+    if (result != ESP_OK &&
+        result != ESP_ERR_WIFI_CONN)
+    {
+        /*
+         * ESP_ERR_WIFI_CONN isn't normally expected
+         * here, but don't treat it as a fatal
+         * initialization failure.
+         */
+        LOG_ERROR(
+            NETWORK,
+            "Failed to start Wi-Fi: %s",
+            esp_err_to_name(result));
+
+        return false;
+    }
+
+    initialized = true;
+
+    LOG_INFO(
+        NETWORK,
+        "Access Point started successfully");
+
+    LOG_INFO(
+        NETWORK,
+        "AP SSID: %s",
+        config.ssid);
+
+    LOG_INFO(
+        NETWORK,
+        "AP IP: 192.168.4.1");
+
+    return true;
+}
+
+bool APManager::apply_config(
+    const APConfig &config)
+{
+    if (!ConfigManager::validate(config))
+    {
+        LOG_ERROR(
+            NETWORK,
+            "Attempted to apply invalid AP configuration");
+
+        return false;
+    }
 
     if (ap_netif == nullptr)
     {
         LOG_ERROR(
             NETWORK,
-            "Failed to create AP network interface");
+            "AP network interface is not initialized");
 
         return false;
     }
 
-    // ----------------------------------------
-    // Configure Access Point
-    // ----------------------------------------
-
     wifi_config_t ap_config = {};
 
-    strncpy(
-        reinterpret_cast<char *>(ap_config.ap.ssid),
+    std::strncpy(
+        reinterpret_cast<char *>(
+            ap_config.ap.ssid),
         config.ssid,
         sizeof(ap_config.ap.ssid) - 1);
 
-    strncpy(
-        reinterpret_cast<char *>(ap_config.ap.password),
+    ap_config.ap.ssid[
+        sizeof(ap_config.ap.ssid) - 1] =
+        '\0';
+
+    std::strncpy(
+        reinterpret_cast<char *>(
+            ap_config.ap.password),
         config.password,
         sizeof(ap_config.ap.password) - 1);
 
+    ap_config.ap.password[
+        sizeof(ap_config.ap.password) - 1] =
+        '\0';
+
     ap_config.ap.ssid_len =
-        strlen(config.ssid);
+        static_cast<uint8_t>(
+            std::strlen(config.ssid));
 
     ap_config.ap.channel =
         config.channel;
@@ -78,126 +167,66 @@ bool APManager::init()
     ap_config.ap.authmode =
         WIFI_AUTH_WPA2_PSK;
 
+    /*
+     * Protected Management Frames:
+     *
+     * Capable = true
+     * Required = false
+     *
+     * This keeps the AP compatible with
+     * normal phones/laptops while supporting
+     * PMF-capable clients.
+     */
     ap_config.ap.pmf_cfg.capable = true;
     ap_config.ap.pmf_cfg.required = false;
 
-    // ----------------------------------------
-    // AP + Station mode
-    // ----------------------------------------
+    /*
+     * APSTA allows the ESP32 to operate as an
+     * Access Point while retaining the ability
+     * to use station mode later.
+     */
+    esp_err_t result =
+        esp_wifi_set_mode(
+            WIFI_MODE_APSTA);
 
-    esp_err_t err =
-        esp_wifi_set_mode(WIFI_MODE_APSTA);
-
-    if (err != ESP_OK)
+    if (result != ESP_OK)
     {
         LOG_ERROR(
             NETWORK,
             "Failed to set APSTA mode: %s",
-            esp_err_to_name(err));
+            esp_err_to_name(result));
 
         return false;
     }
 
-    // ----------------------------------------
-    // Apply AP configuration
-    // ----------------------------------------
-
-    err =
+    result =
         esp_wifi_set_config(
             WIFI_IF_AP,
             &ap_config);
 
-    if (err != ESP_OK)
+    if (result != ESP_OK)
     {
         LOG_ERROR(
             NETWORK,
-            "Failed to configure Access Point: %s",
-            esp_err_to_name(err));
+            "Failed to configure AP: %s",
+            esp_err_to_name(result));
 
         return false;
     }
 
-    // ----------------------------------------
-    // Start Wi-Fi
-    // ----------------------------------------
-
-    err = esp_wifi_start();
-
-    if (err != ESP_OK &&
-        err != ESP_ERR_WIFI_STATE)
-    {
-        LOG_ERROR(
-            NETWORK,
-            "Failed to start Wi-Fi: %s",
-            esp_err_to_name(err));
-
-        return false;
-    }
-
-    // ----------------------------------------
-    // Get AP IP address
-    // ----------------------------------------
-
-    esp_netif_ip_info_t ip_info = {};
-
-    err =
-        esp_netif_get_ip_info(
-            ap_netif,
-            &ip_info);
-
-    if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            NETWORK,
-            "Failed to get AP IP address: %s",
-            esp_err_to_name(err));
-
-        return false;
-    }
-
-    // ----------------------------------------
-    // Log configuration
-    // ----------------------------------------
-
     LOG_INFO(
         NETWORK,
-        "Access Point initialized");
-
-    LOG_INFO(
-        NETWORK,
-        "SSID: %s",
-        config.ssid);
-
-    LOG_INFO(
-        NETWORK,
-        "Channel: %u",
-        config.channel);
-
-    LOG_INFO(
-        NETWORK,
-        "Max connections: %u",
-        config.max_connections);
-
-    LOG_INFO(
-        NETWORK,
-        "IP address: " IPSTR,
-        IP2STR(&ip_info.ip));
-
-    LOG_INFO(
-        NETWORK,
-        "Gateway: " IPSTR,
-        IP2STR(&ip_info.gw));
-
-    LOG_INFO(
-        NETWORK,
-        "Subnet: " IPSTR,
-        IP2STR(&ip_info.netmask));
-
-    // ----------------------------------------
-    // Initialization complete
-    // ----------------------------------------
-
-    initialized = true;
+        "AP configuration applied: SSID=%s, channel=%u, max_clients=%u",
+        config.ssid,
+        static_cast<unsigned int>(
+            config.channel),
+        static_cast<unsigned int>(
+            config.max_connections));
 
     return true;
+}
+
+bool APManager::is_initialized()
+{
+    return initialized;
 }

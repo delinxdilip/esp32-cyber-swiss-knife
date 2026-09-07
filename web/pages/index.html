@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#09090a">
+    <title>CyberSwissKnife</title>
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+<div class="app-shell">
+
+    <header class="topbar">
+        <a class="brand" href="index.html" aria-label="CyberSwissKnife home">
+            <span class="brand-mark">CSK</span>
+            <span>
+                <strong>CyberSwissKnife</strong>
+                <small>ESP32-S3 Security Lab</small>
+            </span>
+        </a>
+
+        <div class="device-status">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-text">CONNECTING</span>
+        </div>
+    </header>
+
+    <main>
+        <section class="device-overview">
+            <div>
+                <span class="eyebrow">SYSTEM NAME</span>
+                <h1 id="system-name">CyberSwissKnife</h1>
+            </div>
+
+            <div class="overview-item">
+                <span class="eyebrow">ACCESS POINT</span>
+                <span class="overview-value" id="ap-ssid">CyberSwissKnife</span>
+            </div>
+        </section>
+
+        <section class="bento-grid" aria-label="Main modules">
+
+            <a class="bento-card span-2" href="system-config.html">
+                <div class="card-top">
+                    <span class="card-icon">⚙</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">CONFIGURATION</span>
+                    <h2>System Config</h2>
+                    <p>Manage the access point and device configuration.</p>
+                </div>
+            </a>
+
+            <a class="bento-card span-2 tall" href="wifi/index.html">
+                <div class="card-top">
+                    <span class="card-icon">⌁</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">WIRELESS</span>
+                    <h2>Wi-Fi</h2>
+                    <p>Scan, analyze and inspect nearby wireless networks.</p>
+                </div>
+            </a>
+
+            <a class="bento-card" href="bluetooth/index.html">
+                <div class="card-top">
+                    <span class="card-icon">ᛒ</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">WIRELESS</span>
+                    <h2>Bluetooth</h2>
+                    <p>Explore BLE devices and advertisements.</p>
+                </div>
+            </a>
+
+            <a class="bento-card" href="advertisement.html">
+                <div class="card-top">
+                    <span class="card-icon">≋</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">BLE LAB</span>
+                    <h2>Advertisement</h2>
+                    <p>Run controlled Bluetooth advertisement experiments.</p>
+                </div>
+            </a>
+
+            <a class="bento-card span-2" href="logs/index.html">
+                <div class="card-top">
+                    <span class="card-icon">▤</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">SYSTEM</span>
+                    <h2>Logs</h2>
+                    <p>Inspect system and tool logs and export them when needed.</p>
+                </div>
+            </a>
+
+            <a class="bento-card span-2" href="system-info.html">
+                <div class="card-top">
+                    <span class="card-icon">ⓘ</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">DEVICE</span>
+                    <h2>System Info</h2>
+                    <p>Hardware, memory, temperature, CPU and uptime.</p>
+                </div>
+            </a>
+
+        </section>
+    </main>
+
+    <footer class="footer">
+        <span>CyberSwissKnife V1</span>
+        <span id="connection-detail">Connecting to ESP32-S3...</span>
+    </footer>
+
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/dashboard/metrics.js"></script>
+<script src="../js/dashboard/dashboard.js"></script>
+<script src="../js/app.js"></script>
+</body>
+</html>
