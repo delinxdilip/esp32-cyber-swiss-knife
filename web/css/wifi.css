@@ -1,0 +1,143 @@
+.wifi-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.wifi-card {
+    min-height: 260px;
+}
+
+.wifi-ap-card {
+    grid-column: span 7;
+}
+
+.wifi-scan-card {
+    grid-column: span 5;
+}
+
+.wifi-discovery-card {
+    grid-column: span 12;
+    min-height: 230px;
+}
+
+.wifi-module-card {
+    grid-column: span 4;
+    min-height: 230px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.wifi-module-card .card-content {
+    margin-top: 24px;
+}
+
+.wifi-module-card:hover {
+    color: inherit;
+}
+
+
+.wifi-detail-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.wifi-detail-row div,
+.wifi-stat-grid div {
+    min-width: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.wifi-detail-row span,
+.wifi-stat-grid span {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+}
+
+.wifi-detail-row strong,
+.wifi-stat-grid strong {
+    display: block;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: .85rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.wifi-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 12px;
+    position: relative;
+    z-index: 1;
+}
+
+
+#wifi-status-text {
+    min-width: 70px;
+}
+
+
+@media (max-width: 900px) {
+
+    .wifi-ap-card,
+    .wifi-scan-card,
+    .wifi-discovery-card {
+        grid-column: span 12;
+    }
+
+    .wifi-module-card {
+        grid-column: span 4;
+    }
+}
+
+
+@media (max-width: 640px) {
+
+    .wifi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wifi-ap-card,
+    .wifi-scan-card,
+    .wifi-discovery-card,
+    .wifi-module-card {
+        grid-column: span 1;
+    }
+
+    .wifi-card,
+    .wifi-module-card {
+        min-height: 220px;
+    }
+
+    .wifi-detail-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .wifi-detail-row div {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .wifi-detail-row span {
+        margin-bottom: 0;
+    }
+
+    .wifi-detail-row strong {
+        max-width: 60%;
+        text-align: right;
+    }
+}

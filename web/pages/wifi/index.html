@@ -1,48 +1,271 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wi-Fi · CyberSwissKnife</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Wi-Fi — CyberSwissKnife</title>
+
     <link rel="stylesheet" href="../../css/base.css">
     <link rel="stylesheet" href="../../css/layout.css">
     <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/wifi.css">
 </head>
+
 <body>
-<div class="app-shell">
-<header class="topbar">
-    <a class="brand" href="../index.html">
-        <span class="brand-mark">CSK</span>
-        <span><strong>CyberSwissKnife</strong><small>Wi-Fi</small></span>
-    </a>
-    <a class="back-link" href="../index.html">← Home</a>
-</header>
+    <main class="app-shell">
 
-<main>
-<section class="page-heading">
-    <span class="eyebrow">WIRELESS</span>
-    <h1>Wi-Fi</h1>
-    <p>Select a Wi-Fi tool.</p>
-</section>
+        <header class="topbar">
+            <a class="brand" href="../index.html">
+                <span class="brand-mark">CSK</span>
 
-<section class="module-list">
-    <a class="bento-card" href="scanner.html">
-        <div class="card-top"><span class="card-icon">⌁</span><span class="card-arrow">↗</span></div>
-        <div class="card-content"><span class="card-label">DISCOVERY</span><h2>Scanner</h2><p>Discover nearby Wi-Fi networks on demand.</p></div>
-    </a>
-    <a class="bento-card" href="analyzer.html">
-        <div class="card-top"><span class="card-icon">▥</span><span class="card-arrow">↗</span></div>
-        <div class="card-content"><span class="card-label">ANALYSIS</span><h2>Analyzer</h2><p>Inspect signal strength, channels and security.</p></div>
-    </a>
-    <a class="bento-card" href="lab.html">
-        <div class="card-top"><span class="card-icon">◇</span><span class="card-arrow">↗</span></div>
-        <div class="card-content"><span class="card-label">LAB</span><h2>Wi-Fi Lab</h2><p>Authorized wireless research and controlled experiments.</p></div>
-    </a>
-</section>
-</main>
+                <span>
+                    <strong>CyberSwissKnife</strong>
+                    <small>Wireless Security Platform</small>
+                </span>
+            </a>
 
-<footer class="footer"><span>CyberSwissKnife V1</span><span>Wi-Fi Module</span></footer>
-</div>
+            <div class="device-status">
+                <span
+                    id="wifi-status-dot"
+                    class="status-dot"
+                ></span>
+
+                <span id="wifi-status-text">
+                    CHECKING
+                </span>
+            </div>
+        </header>
+
+
+        <section class="page-heading">
+            <a
+                class="back-link"
+                href="../index.html"
+            >
+                ← Back to dashboard
+            </a>
+
+            <h1>Wi-Fi</h1>
+
+            <p>
+                Wireless network discovery, analysis and
+                controlled laboratory testing.
+            </p>
+        </section>
+
+
+        <section class="wifi-grid">
+
+            <!-- Access Point -->
+            <article class="bento-card wifi-card wifi-ap-card">
+
+                <div class="card-top">
+                    <span class="card-icon">◉</span>
+                    <span class="card-label">ACCESS POINT</span>
+                </div>
+
+                <div class="card-content">
+                    <h2 id="ap-ssid">—</h2>
+
+                    <p id="ap-status">
+                        Access point information will be
+                        available here.
+                    </p>
+                </div>
+
+                <div class="wifi-detail-row">
+                    <div>
+                        <span>IP ADDRESS</span>
+                        <strong id="ap-ip">—</strong>
+                    </div>
+
+                    <div>
+                        <span>CHANNEL</span>
+                        <strong id="ap-channel">—</strong>
+                    </div>
+
+                    <div>
+                        <span>CLIENTS</span>
+                        <strong id="ap-clients">—</strong>
+                    </div>
+                </div>
+
+            </article>
+
+
+            <!-- Scan Summary -->
+            <article class="bento-card wifi-card wifi-scan-card">
+
+                <div class="card-top">
+                    <span class="card-icon">⌁</span>
+                    <span class="card-label">SCAN</span>
+                </div>
+
+                <div class="card-content">
+                    <h2>
+                        <span id="network-count">—</span>
+                        networks
+                    </h2>
+
+                    <p>
+                        Networks discovered during the latest
+                        Wi-Fi scan.
+                    </p>
+                </div>
+
+                <div class="wifi-stat-grid">
+
+                    <div>
+                        <span>OPEN</span>
+                        <strong id="open-count">—</strong>
+                    </div>
+
+                    <div>
+                        <span>HIDDEN</span>
+                        <strong id="hidden-count">—</strong>
+                    </div>
+
+                    <div>
+                        <span>STRONGEST</span>
+                        <strong id="strongest-rssi">—</strong>
+                    </div>
+
+                    <div>
+                        <span>WEAKEST</span>
+                        <strong id="weakest-rssi">—</strong>
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <!-- Latest Discovery -->
+            <article class="bento-card wifi-card wifi-discovery-card">
+
+                <div class="card-top">
+                    <span class="card-icon">⌕</span>
+                    <span class="card-label">LATEST DISCOVERY</span>
+                </div>
+
+                <div class="card-content">
+                    <h2 id="latest-network-name">—</h2>
+
+                    <p id="latest-network-details">
+                        No scanned networks available.
+                    </p>
+                </div>
+
+                <div class="wifi-detail-row">
+                    <div>
+                        <span>SIGNAL</span>
+                        <strong id="latest-network-rssi">—</strong>
+                    </div>
+
+                    <div>
+                        <span>CHANNEL</span>
+                        <strong id="latest-network-channel">—</strong>
+                    </div>
+
+                    <div>
+                        <span>BSSID</span>
+                        <strong id="latest-network-bssid">—</strong>
+                    </div>
+                </div>
+
+            </article>
+
+
+            <!-- Scanner -->
+            <a
+                class="bento-card wifi-module-card"
+                href="scanner.html"
+            >
+
+                <div class="card-top">
+                    <span class="card-icon">⌕</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+
+                <div class="card-content">
+                    <span class="card-label">DISCOVERY</span>
+
+                    <h2>Scanner</h2>
+
+                    <p>
+                        Discover nearby wireless networks,
+                        channels, signal levels and security.
+                    </p>
+                </div>
+
+            </a>
+
+
+            <!-- Analyzer -->
+            <a
+                class="bento-card wifi-module-card"
+                href="analyzer.html"
+            >
+
+                <div class="card-top">
+                    <span class="card-icon">▥</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+
+                <div class="card-content">
+                    <span class="card-label">ANALYSIS</span>
+
+                    <h2>Analyzer</h2>
+
+                    <p>
+                        Understand signal distribution,
+                        channels and wireless environment.
+                    </p>
+                </div>
+
+            </a>
+
+
+            <!-- Lab -->
+            <a
+                class="bento-card wifi-module-card"
+                href="lab.html"
+            >
+
+                <div class="card-top">
+                    <span class="card-icon">◇</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+
+                <div class="card-content">
+                    <span class="card-label">CONTROLLED LAB</span>
+
+                    <h2>Lab</h2>
+
+                    <p>
+                        Controlled wireless security experiments
+                        for authorized environments.
+                    </p>
+                </div>
+
+            </a>
+
+        </section>
+
+
+        <footer class="footer">
+            <span>CyberSwissKnife</span>
+            <span>Wi-Fi Module</span>
+        </footer>
+
+    </main>
+
+
+    <script src="../../js/api.js"></script>
+    <script src="../../js/wifi/dashboard.js"></script>
 </body>
 </html>
