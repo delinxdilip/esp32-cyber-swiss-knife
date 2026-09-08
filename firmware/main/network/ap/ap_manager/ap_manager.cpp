@@ -18,6 +18,7 @@ bool APManager::init()
     if (initialized)
     {
         LOG_WARN(
+            SYSTEM,
             NETWORK,
             "Access Point already initialized");
 
@@ -30,6 +31,7 @@ bool APManager::init()
     if (!ConfigManager::validate(config))
     {
         LOG_ERROR(
+            SYSTEM,
             NETWORK,
             "Invalid AP configuration");
 
@@ -48,6 +50,7 @@ bool APManager::init()
         if (ap_netif == nullptr)
         {
             LOG_ERROR(
+                SYSTEM,
                 NETWORK,
                 "Failed to create AP network interface");
 
@@ -61,6 +64,7 @@ bool APManager::init()
     if (!apply_config(config))
     {
         LOG_ERROR(
+            SYSTEM,
             NETWORK,
             "Failed to apply AP configuration");
 
@@ -86,6 +90,7 @@ bool APManager::init()
          * initialization failure.
          */
         LOG_ERROR(
+            SYSTEM,
             NETWORK,
             "Failed to start Wi-Fi: %s",
             esp_err_to_name(result));
@@ -96,15 +101,18 @@ bool APManager::init()
     initialized = true;
 
     LOG_INFO(
+        SYSTEM,
         NETWORK,
         "Access Point started successfully");
 
     LOG_INFO(
+        SYSTEM,
         NETWORK,
         "AP SSID: %s",
         config.ssid);
 
     LOG_INFO(
+        SYSTEM,
         NETWORK,
         "AP IP: 192.168.4.1");
 
@@ -117,6 +125,7 @@ bool APManager::apply_config(
     if (!ConfigManager::validate(config))
     {
         LOG_ERROR(
+            SYSTEM,
             NETWORK,
             "Attempted to apply invalid AP configuration");
 
@@ -126,6 +135,7 @@ bool APManager::apply_config(
     if (ap_netif == nullptr)
     {
         LOG_ERROR(
+            SYSTEM,
             NETWORK,
             "AP network interface is not initialized");
 
@@ -192,6 +202,7 @@ bool APManager::apply_config(
     if (result != ESP_OK)
     {
         LOG_ERROR(
+            SYSTEM,
             NETWORK,
             "Failed to set APSTA mode: %s",
             esp_err_to_name(result));
@@ -207,6 +218,7 @@ bool APManager::apply_config(
     if (result != ESP_OK)
     {
         LOG_ERROR(
+            SYSTEM,
             NETWORK,
             "Failed to configure AP: %s",
             esp_err_to_name(result));
@@ -215,6 +227,7 @@ bool APManager::apply_config(
     }
 
     LOG_INFO(
+        SYSTEM,
         NETWORK,
         "AP configuration applied: SSID=%s, channel=%u, max_clients=%u",
         config.ssid,

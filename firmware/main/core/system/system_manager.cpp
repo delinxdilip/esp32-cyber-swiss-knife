@@ -31,6 +31,7 @@ void SystemManager::init()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "CyberSwissKnife System Core starting");
 
     SystemInfo::print();
@@ -47,6 +48,7 @@ void SystemManager::init()
                 temperature))
         {
             LOG_INFO(
+                SYSTEM,
                 SYSTEM,
                 "Temperature: %.2f C",
                 temperature);
@@ -74,6 +76,7 @@ void SystemManager::init()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "Uptime: %lu days %02lu:%02lu:%02lu",
         (unsigned long)uptime_days,
         (unsigned long)uptime_hours,
@@ -88,6 +91,7 @@ void SystemManager::init()
     {
         LOG_ERROR(
             SYSTEM,
+            SYSTEM,
             "Wi-Fi initialization failed");
 
         return;
@@ -100,6 +104,7 @@ void SystemManager::init()
     if (!ConfigManager::init())
     {
         LOG_ERROR(
+            SYSTEM,
             SYSTEM,
             "Configuration initialization failed");
 
@@ -114,6 +119,7 @@ void SystemManager::init()
     {
         LOG_ERROR(
             SYSTEM,
+            SYSTEM,
             "Access Point initialization failed");
 
         return;
@@ -126,6 +132,7 @@ void SystemManager::init()
     if (!WebServer::init())
     {
         LOG_ERROR(
+            SYSTEM,
             SYSTEM,
             "HTTP server initialization failed");
 
@@ -150,9 +157,11 @@ void SystemManager::init()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "Wi-Fi scanning is available on demand");
 
     LOG_INFO(
+        SYSTEM,
         SYSTEM,
         "System initialization complete");
 }

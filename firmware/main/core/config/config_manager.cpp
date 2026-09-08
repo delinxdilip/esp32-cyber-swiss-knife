@@ -93,7 +93,18 @@ namespace
 
     constexpr const char *KEY_RGB_LED_PIN =
         "rgb_led_pin";
+
+    // ========================================================
+    // LOG KEYS
+    // ========================================================
+
+    constexpr const char *KEY_LOG_SYSTEM_AUTO_CLEAR =
+        "log_system_auto_clear";
+
+    constexpr const char *KEY_LOG_ACTIVITY_AUTO_CLEAR =
+        "log_activity_auto_clear";
 }
+
 
 // ============================================================
 // STATIC CONFIGURATION INSTANCES
@@ -107,6 +118,9 @@ DeviceConfig ConfigManager::device_config = {};
 
 HardwareConfig ConfigManager::hardware_config = {};
 
+LoggingConfig ConfigManager::logging_config = {};
+
+
 // ============================================================
 // INITIALIZATION
 // ============================================================
@@ -115,6 +129,7 @@ bool ConfigManager::init()
 {
     return load();
 }
+
 
 // ============================================================
 // DEFAULT CONFIGURATION
@@ -214,7 +229,20 @@ void ConfigManager::set_defaults()
     hardware_config.onboard_rgb_led_enabled = true;
 
     hardware_config.onboard_rgb_pin = 48;
+
+    // --------------------------------------------------------
+    // LOG DEFAULTS
+    // --------------------------------------------------------
+
+    std::memset(
+        &logging_config,
+        0,
+        sizeof(logging_config));
+
+    logging_config.system_auto_clear = true;
+    logging_config.activity_auto_clear = true;
 }
+
 
 // ============================================================
 // AP VALIDATION
@@ -233,6 +261,7 @@ bool ConfigManager::validate(
         ssid_length > 32)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid AP SSID length: %u",
             static_cast<unsigned>(
@@ -245,6 +274,7 @@ bool ConfigManager::validate(
         password_length > 64)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid AP password length");
 
@@ -255,6 +285,7 @@ bool ConfigManager::validate(
         config.max_connections > 10)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid AP max connections: %u",
             static_cast<unsigned>(
@@ -267,6 +298,7 @@ bool ConfigManager::validate(
         config.channel > 13)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid AP channel: %u",
             static_cast<unsigned>(
@@ -278,6 +310,7 @@ bool ConfigManager::validate(
     return true;
 }
 
+
 // ============================================================
 // TFT VALIDATION
 // ============================================================
@@ -285,10 +318,6 @@ bool ConfigManager::validate(
 bool ConfigManager::validate(
     const TFTConfig &config)
 {
-    // --------------------------------------------------------
-    // Controller
-    // --------------------------------------------------------
-
     switch (config.controller)
     {
         case TFTController::GC9A01:
@@ -296,15 +325,12 @@ bool ConfigManager::validate(
 
         default:
             LOG_WARN(
+                ACTIVITY,
                 SYSTEM,
                 "Invalid TFT controller");
 
             return false;
     }
-
-    // --------------------------------------------------------
-    // Shape
-    // --------------------------------------------------------
 
     switch (config.shape)
     {
@@ -313,20 +339,18 @@ bool ConfigManager::validate(
 
         default:
             LOG_WARN(
+                ACTIVITY,
                 SYSTEM,
                 "Invalid TFT shape");
 
             return false;
     }
 
-    // --------------------------------------------------------
-    // Resolution
-    // --------------------------------------------------------
-
     if (config.width == 0 ||
         config.height == 0)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid TFT resolution: %ux%u",
             static_cast<unsigned>(
@@ -337,10 +361,6 @@ bool ConfigManager::validate(
         return false;
     }
 
-    // --------------------------------------------------------
-    // Current GC9A01 display
-    // --------------------------------------------------------
-
     if (config.controller ==
             TFTController::GC9A01 &&
         config.shape ==
@@ -350,6 +370,7 @@ bool ConfigManager::validate(
             config.height != 240)
         {
             LOG_WARN(
+                ACTIVITY,
                 SYSTEM,
                 "Invalid GC9A01 round display resolution: %ux%u",
                 static_cast<unsigned>(
@@ -361,10 +382,6 @@ bool ConfigManager::validate(
         }
     }
 
-    // --------------------------------------------------------
-    // Rotation
-    // --------------------------------------------------------
-
     switch (config.rotation)
     {
         case TFTRotation::ROTATION_0:
@@ -375,6 +392,7 @@ bool ConfigManager::validate(
 
         default:
             LOG_WARN(
+                ACTIVITY,
                 SYSTEM,
                 "Invalid TFT rotation");
 
@@ -383,6 +401,7 @@ bool ConfigManager::validate(
 
     return true;
 }
+
 
 // ============================================================
 // DEVICE VALIDATION
@@ -400,14 +419,11 @@ bool ConfigManager::validate(
     const size_t bluetooth_name_length =
         std::strlen(config.bluetooth_name);
 
-    // --------------------------------------------------------
-    // Device name
-    // --------------------------------------------------------
-
     if (device_name_length == 0 ||
         device_name_length > 32)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid device name length: %u",
             static_cast<unsigned>(
@@ -416,14 +432,11 @@ bool ConfigManager::validate(
         return false;
     }
 
-    // --------------------------------------------------------
-    // Web UI title
-    // --------------------------------------------------------
-
     if (web_ui_title_length == 0 ||
         web_ui_title_length > 64)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid Web UI title length: %u",
             static_cast<unsigned>(
@@ -432,14 +445,11 @@ bool ConfigManager::validate(
         return false;
     }
 
-    // --------------------------------------------------------
-    // Bluetooth name
-    // --------------------------------------------------------
-
     if (bluetooth_name_length == 0 ||
         bluetooth_name_length > 32)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid Bluetooth name length: %u",
             static_cast<unsigned>(
@@ -451,6 +461,7 @@ bool ConfigManager::validate(
     return true;
 }
 
+
 // ============================================================
 // HARDWARE VALIDATION
 // ============================================================
@@ -458,11 +469,10 @@ bool ConfigManager::validate(
 bool ConfigManager::validate(
     const HardwareConfig &config)
 {
-    // GPIO 0-48 are valid ESP32-S3 GPIO numbers,
-    // but the actual usable GPIOs depend on the board.
     if (config.onboard_rgb_pin > 48)
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Invalid onboard RGB LED GPIO: %u",
             static_cast<unsigned>(
@@ -473,6 +483,7 @@ bool ConfigManager::validate(
 
     return true;
 }
+
 
 // ============================================================
 // LOAD CONFIGURATION
@@ -491,6 +502,7 @@ bool ConfigManager::load()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to open config NVS: %s",
             esp_err_to_name(err));
@@ -525,6 +537,7 @@ bool ConfigManager::load()
     else if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to load AP SSID: %s",
             esp_err_to_name(err));
@@ -590,9 +603,6 @@ bool ConfigManager::load()
         }
         else if (err == ESP_ERR_NVS_NOT_FOUND)
         {
-            // Backward compatibility with
-            // configuration created before
-            // AP enabled existed.
             ap_config.enabled = true;
             needs_save = true;
         }
@@ -605,6 +615,7 @@ bool ConfigManager::load()
     if (!ap_loaded)
     {
         LOG_INFO(
+            ACTIVITY,
             SYSTEM,
             "AP configuration missing or incomplete; using defaults");
 
@@ -631,6 +642,7 @@ bool ConfigManager::load()
     else if (!validate(ap_config))
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Stored AP configuration is invalid; restoring AP defaults");
 
@@ -796,25 +808,17 @@ bool ConfigManager::load()
     if (!tft_loaded)
     {
         LOG_INFO(
+            ACTIVITY,
             SYSTEM,
             "TFT configuration missing or incomplete; using defaults");
 
         tft_config.enabled = true;
-
-        tft_config.controller =
-            TFTController::GC9A01;
-
-        tft_config.shape =
-            TFTShape::ROUND;
-
+        tft_config.controller = TFTController::GC9A01;
+        tft_config.shape = TFTShape::ROUND;
         tft_config.width = 240;
         tft_config.height = 240;
-
-        tft_config.rotation =
-            TFTRotation::ROTATION_0;
-
+        tft_config.rotation = TFTRotation::ROTATION_0;
         tft_config.touch = false;
-
         tft_config.color = 0xFFFFFF;
 
         needs_save = true;
@@ -822,25 +826,17 @@ bool ConfigManager::load()
     else if (!validate(tft_config))
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Stored TFT configuration is invalid; restoring TFT defaults");
 
         tft_config.enabled = true;
-
-        tft_config.controller =
-            TFTController::GC9A01;
-
-        tft_config.shape =
-            TFTShape::ROUND;
-
+        tft_config.controller = TFTController::GC9A01;
+        tft_config.shape = TFTShape::ROUND;
         tft_config.width = 240;
         tft_config.height = 240;
-
-        tft_config.rotation =
-            TFTRotation::ROTATION_0;
-
+        tft_config.rotation = TFTRotation::ROTATION_0;
         tft_config.touch = false;
-
         tft_config.color = 0xFFFFFF;
 
         needs_save = true;
@@ -906,9 +902,7 @@ bool ConfigManager::load()
         }
         else if (err == ESP_ERR_NVS_NOT_FOUND)
         {
-            device_config.ap_identification =
-                true;
-
+            device_config.ap_identification = true;
             needs_save = true;
         }
         else
@@ -933,9 +927,7 @@ bool ConfigManager::load()
         }
         else if (err == ESP_ERR_NVS_NOT_FOUND)
         {
-            device_config.device_discovery =
-                true;
-
+            device_config.device_discovery = true;
             needs_save = true;
         }
         else
@@ -967,9 +959,7 @@ bool ConfigManager::load()
 
         if (err == ESP_ERR_NVS_NOT_FOUND)
         {
-            device_config.tft_color_theme =
-                0xFFFFFF;
-
+            device_config.tft_color_theme = 0xFFFFFF;
             needs_save = true;
         }
         else if (err != ESP_OK)
@@ -981,6 +971,7 @@ bool ConfigManager::load()
     if (!device_loaded)
     {
         LOG_INFO(
+            ACTIVITY,
             SYSTEM,
             "Device configuration missing or incomplete; using defaults");
 
@@ -1000,7 +991,6 @@ bool ConfigManager::load()
             sizeof(device_config.web_ui_title) - 1);
 
         device_config.ap_identification = true;
-
         device_config.device_discovery = true;
 
         std::strncpy(
@@ -1008,14 +998,14 @@ bool ConfigManager::load()
             "CyberSwissKnife",
             sizeof(device_config.bluetooth_name) - 1);
 
-        device_config.tft_color_theme =
-            0xFFFFFF;
+        device_config.tft_color_theme = 0xFFFFFF;
 
         needs_save = true;
     }
     else if (!validate(device_config))
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Stored device configuration is invalid; restoring device defaults");
 
@@ -1035,7 +1025,6 @@ bool ConfigManager::load()
             sizeof(device_config.web_ui_title) - 1);
 
         device_config.ap_identification = true;
-
         device_config.device_discovery = true;
 
         std::strncpy(
@@ -1043,8 +1032,7 @@ bool ConfigManager::load()
             "CyberSwissKnife",
             sizeof(device_config.bluetooth_name) - 1);
 
-        device_config.tft_color_theme =
-            0xFFFFFF;
+        device_config.tft_color_theme = 0xFFFFFF;
 
         needs_save = true;
     }
@@ -1093,6 +1081,7 @@ bool ConfigManager::load()
     if (!hardware_loaded)
     {
         LOG_INFO(
+            ACTIVITY,
             SYSTEM,
             "Hardware configuration missing or incomplete; using defaults");
 
@@ -1102,7 +1091,6 @@ bool ConfigManager::load()
             sizeof(hardware_config));
 
         hardware_config.onboard_rgb_led_enabled = true;
-
         hardware_config.onboard_rgb_pin = 48;
 
         needs_save = true;
@@ -1110,6 +1098,7 @@ bool ConfigManager::load()
     else if (!validate(hardware_config))
     {
         LOG_WARN(
+            ACTIVITY,
             SYSTEM,
             "Stored hardware configuration is invalid; restoring hardware defaults");
 
@@ -1119,8 +1108,65 @@ bool ConfigManager::load()
             sizeof(hardware_config));
 
         hardware_config.onboard_rgb_led_enabled = true;
-
         hardware_config.onboard_rgb_pin = 48;
+
+        needs_save = true;
+    }
+
+    // ========================================================
+    // LOGGING CONFIGURATION
+    // ========================================================
+
+    bool logging_loaded = true;
+
+    uint8_t system_auto_clear = 1;
+    uint8_t activity_auto_clear = 1;
+
+    err = nvs_get_u8(
+        handle,
+        KEY_LOG_SYSTEM_AUTO_CLEAR,
+        &system_auto_clear);
+
+    if (err == ESP_ERR_NVS_NOT_FOUND)
+    {
+        logging_loaded = false;
+    }
+    else if (err != ESP_OK)
+    {
+        logging_loaded = false;
+    }
+
+    if (logging_loaded)
+    {
+        err = nvs_get_u8(
+            handle,
+            KEY_LOG_ACTIVITY_AUTO_CLEAR,
+            &activity_auto_clear);
+
+        if (err != ESP_OK)
+        {
+            logging_loaded = false;
+        }
+    }
+
+    if (logging_loaded)
+    {
+        logging_config.system_auto_clear =
+            system_auto_clear != 0;
+
+        logging_config.activity_auto_clear =
+            activity_auto_clear != 0;
+    }
+
+    if (!logging_loaded)
+    {
+        LOG_INFO(
+            ACTIVITY,
+            SYSTEM,
+            "Logging configuration missing or incomplete; using defaults");
+
+        logging_config.system_auto_clear = true;
+        logging_config.activity_auto_clear = true;
 
         needs_save = true;
     }
@@ -1134,6 +1180,7 @@ bool ConfigManager::load()
     if (needs_save)
     {
         LOG_INFO(
+            ACTIVITY,
             SYSTEM,
             "Configuration defaults or corrections need to be persisted");
 
@@ -1141,11 +1188,13 @@ bool ConfigManager::load()
     }
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "Configuration loaded successfully");
 
     return true;
 }
+
 
 // ============================================================
 // SAVE CONFIGURATION
@@ -1153,13 +1202,10 @@ bool ConfigManager::load()
 
 bool ConfigManager::save()
 {
-    // --------------------------------------------------------
-    // Validate all configuration groups
-    // --------------------------------------------------------
-
     if (!validate(ap_config))
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Cannot save: invalid AP configuration");
 
@@ -1169,6 +1215,7 @@ bool ConfigManager::save()
     if (!validate(tft_config))
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Cannot save: invalid TFT configuration");
 
@@ -1178,6 +1225,7 @@ bool ConfigManager::save()
     if (!validate(device_config))
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Cannot save: invalid device configuration");
 
@@ -1187,6 +1235,7 @@ bool ConfigManager::save()
     if (!validate(hardware_config))
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Cannot save: invalid hardware configuration");
 
@@ -1204,6 +1253,7 @@ bool ConfigManager::save()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to open config NVS for save: %s",
             esp_err_to_name(err));
@@ -1221,15 +1271,7 @@ bool ConfigManager::save()
         ap_config.enabled ? 1 : 0);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save AP enabled: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_str(
         handle,
@@ -1237,15 +1279,7 @@ bool ConfigManager::save()
         ap_config.ssid);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save AP SSID: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_str(
         handle,
@@ -1253,15 +1287,7 @@ bool ConfigManager::save()
         ap_config.password);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save AP password: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1269,15 +1295,7 @@ bool ConfigManager::save()
         ap_config.max_connections);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save AP max connections: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1285,15 +1303,7 @@ bool ConfigManager::save()
         ap_config.channel);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save AP channel: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     // ========================================================
     // TFT
@@ -1305,15 +1315,7 @@ bool ConfigManager::save()
         tft_config.enabled ? 1 : 0);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT enabled: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1322,15 +1324,7 @@ bool ConfigManager::save()
             tft_config.controller));
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT controller: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1339,15 +1333,7 @@ bool ConfigManager::save()
             tft_config.shape));
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT shape: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u16(
         handle,
@@ -1355,15 +1341,7 @@ bool ConfigManager::save()
         tft_config.width);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT width: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u16(
         handle,
@@ -1371,15 +1349,7 @@ bool ConfigManager::save()
         tft_config.height);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT height: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1388,15 +1358,7 @@ bool ConfigManager::save()
             tft_config.rotation));
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT rotation: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1404,15 +1366,7 @@ bool ConfigManager::save()
         tft_config.touch ? 1 : 0);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT touch: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u32(
         handle,
@@ -1420,15 +1374,7 @@ bool ConfigManager::save()
         tft_config.color);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT color: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     // ========================================================
     // DEVICE
@@ -1440,15 +1386,7 @@ bool ConfigManager::save()
         device_config.device_name);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save device name: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_str(
         handle,
@@ -1456,15 +1394,7 @@ bool ConfigManager::save()
         device_config.web_ui_title);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save Web UI title: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1472,15 +1402,7 @@ bool ConfigManager::save()
         device_config.ap_identification ? 1 : 0);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save AP identification: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1488,15 +1410,7 @@ bool ConfigManager::save()
         device_config.device_discovery ? 1 : 0);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save device discovery: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_str(
         handle,
@@ -1504,15 +1418,7 @@ bool ConfigManager::save()
         device_config.bluetooth_name);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save Bluetooth name: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u32(
         handle,
@@ -1520,15 +1426,7 @@ bool ConfigManager::save()
         device_config.tft_color_theme);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save TFT color theme: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     // ========================================================
     // HARDWARE
@@ -1540,15 +1438,7 @@ bool ConfigManager::save()
         hardware_config.onboard_rgb_led_enabled ? 1 : 0);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save RGB LED enabled state: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     err = nvs_set_u8(
         handle,
@@ -1556,15 +1446,27 @@ bool ConfigManager::save()
         hardware_config.onboard_rgb_pin);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to save RGB LED GPIO: %s",
-            esp_err_to_name(err));
+        goto error;
 
-        nvs_close(handle);
-        return false;
-    }
+    // ========================================================
+    // LOGGING
+    // ========================================================
+
+    err = nvs_set_u8(
+        handle,
+        KEY_LOG_SYSTEM_AUTO_CLEAR,
+        logging_config.system_auto_clear ? 1 : 0);
+
+    if (err != ESP_OK)
+        goto error;
+
+    err = nvs_set_u8(
+        handle,
+        KEY_LOG_ACTIVITY_AUTO_CLEAR,
+        logging_config.activity_auto_clear ? 1 : 0);
+
+    if (err != ESP_OK)
+        goto error;
 
     // ========================================================
     // COMMIT
@@ -1573,24 +1475,30 @@ bool ConfigManager::save()
     err = nvs_commit(handle);
 
     if (err != ESP_OK)
-    {
-        LOG_ERROR(
-            SYSTEM,
-            "Failed to commit configuration: %s",
-            esp_err_to_name(err));
-
-        nvs_close(handle);
-        return false;
-    }
+        goto error;
 
     nvs_close(handle);
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "Configuration saved");
 
     return true;
+
+error:
+
+    LOG_ERROR(
+        ACTIVITY,
+        SYSTEM,
+        "Failed to save configuration: %s",
+        esp_err_to_name(err));
+
+    nvs_close(handle);
+
+    return false;
 }
+
 
 // ============================================================
 // AP GET / SET
@@ -1607,6 +1515,7 @@ bool ConfigManager::set_ap_config(
     if (!validate(config))
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Rejected invalid AP configuration");
 
@@ -1622,6 +1531,7 @@ bool ConfigManager::set_ap_config(
         ap_config = old_config;
 
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to update AP configuration");
 
@@ -1629,11 +1539,13 @@ bool ConfigManager::set_ap_config(
     }
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "AP configuration updated");
 
     return true;
 }
+
 
 // ============================================================
 // TFT GET / SET
@@ -1650,6 +1562,7 @@ bool ConfigManager::set_tft_config(
     if (!validate(config))
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Rejected invalid TFT configuration");
 
@@ -1665,6 +1578,7 @@ bool ConfigManager::set_tft_config(
         tft_config = old_config;
 
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to update TFT configuration");
 
@@ -1672,11 +1586,13 @@ bool ConfigManager::set_tft_config(
     }
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "TFT configuration updated");
 
     return true;
 }
+
 
 // ============================================================
 // DEVICE GET / SET
@@ -1693,6 +1609,7 @@ bool ConfigManager::set_device_config(
     if (!validate(config))
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Rejected invalid device configuration");
 
@@ -1708,6 +1625,7 @@ bool ConfigManager::set_device_config(
         device_config = old_config;
 
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to update device configuration");
 
@@ -1715,11 +1633,14 @@ bool ConfigManager::set_device_config(
     }
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "Device configuration updated");
 
     return true;
 }
+
+
 // ============================================================
 // HARDWARE GET / SET
 // ============================================================
@@ -1735,6 +1656,7 @@ bool ConfigManager::set_hardware_config(
     if (!validate(config))
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Rejected invalid hardware configuration");
 
@@ -1750,6 +1672,7 @@ bool ConfigManager::set_hardware_config(
         hardware_config = old_config;
 
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to update hardware configuration");
 
@@ -1757,11 +1680,51 @@ bool ConfigManager::set_hardware_config(
     }
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "Hardware configuration updated");
 
     return true;
 }
+
+
+// ============================================================
+// LOGGING GET / SET
+// ============================================================
+
+const LoggingConfig &ConfigManager::get_logging_config()
+{
+    return logging_config;
+}
+
+bool ConfigManager::set_logging_config(
+    const LoggingConfig &config)
+{
+    LoggingConfig old_config =
+        logging_config;
+
+    logging_config = config;
+
+    if (!save_logging_config())
+    {
+        logging_config = old_config;
+
+        LOG_ERROR(
+            ACTIVITY,
+            SYSTEM,
+            "Failed to update logging configuration");
+
+        return false;
+    }
+
+    LOG_INFO(
+        ACTIVITY,
+        SYSTEM,
+        "Logging configuration updated");
+
+    return true;
+}
+
 
 // ============================================================
 // AP CONFIG SAVE
@@ -1779,6 +1742,7 @@ bool ConfigManager::save_ap_config()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to open NVS for AP config: %s",
             esp_err_to_name(err));
@@ -1834,6 +1798,7 @@ bool ConfigManager::save_ap_config()
     nvs_close(handle);
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "AP configuration saved");
 
@@ -1842,6 +1807,7 @@ bool ConfigManager::save_ap_config()
 error:
 
     LOG_ERROR(
+        ACTIVITY,
         SYSTEM,
         "Failed to save AP configuration: %s",
         esp_err_to_name(err));
@@ -1850,6 +1816,7 @@ error:
 
     return false;
 }
+
 
 // ============================================================
 // TFT CONFIG SAVE
@@ -1867,6 +1834,7 @@ bool ConfigManager::save_tft_config()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to open NVS for TFT config: %s",
             esp_err_to_name(err));
@@ -1949,6 +1917,7 @@ bool ConfigManager::save_tft_config()
     nvs_close(handle);
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "TFT configuration saved");
 
@@ -1957,6 +1926,7 @@ bool ConfigManager::save_tft_config()
 error:
 
     LOG_ERROR(
+        ACTIVITY,
         SYSTEM,
         "Failed to save TFT configuration: %s",
         esp_err_to_name(err));
@@ -1966,8 +1936,9 @@ error:
     return false;
 }
 
+
 // ============================================================
-// Device CONFIG SAVE
+// DEVICE CONFIG SAVE
 // ============================================================
 
 bool ConfigManager::save_device_config()
@@ -1982,6 +1953,7 @@ bool ConfigManager::save_device_config()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to open NVS for device config: %s",
             esp_err_to_name(err));
@@ -2045,6 +2017,7 @@ bool ConfigManager::save_device_config()
     nvs_close(handle);
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "Device configuration saved");
 
@@ -2053,6 +2026,7 @@ bool ConfigManager::save_device_config()
 error:
 
     LOG_ERROR(
+        ACTIVITY,
         SYSTEM,
         "Failed to save device configuration: %s",
         esp_err_to_name(err));
@@ -2062,8 +2036,9 @@ error:
     return false;
 }
 
+
 // ============================================================
-// Hardware CONFIG SAVE
+// HARDWARE CONFIG SAVE
 // ============================================================
 
 bool ConfigManager::save_hardware_config()
@@ -2078,6 +2053,7 @@ bool ConfigManager::save_hardware_config()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             SYSTEM,
             "Failed to open NVS for hardware config: %s",
             esp_err_to_name(err));
@@ -2111,6 +2087,7 @@ bool ConfigManager::save_hardware_config()
     nvs_close(handle);
 
     LOG_INFO(
+        ACTIVITY,
         SYSTEM,
         "Hardware configuration saved");
 
@@ -2119,8 +2096,81 @@ bool ConfigManager::save_hardware_config()
 error:
 
     LOG_ERROR(
+        ACTIVITY,
         SYSTEM,
         "Failed to save hardware configuration: %s",
+        esp_err_to_name(err));
+
+    nvs_close(handle);
+
+    return false;
+}
+
+
+// ============================================================
+// LOGGING CONFIG SAVE
+// ============================================================
+
+bool ConfigManager::save_logging_config()
+{
+    nvs_handle_t handle;
+
+    esp_err_t err = nvs_open(
+        NVS_NAMESPACE,
+        NVS_READWRITE,
+        &handle);
+
+    if (err != ESP_OK)
+    {
+        LOG_ERROR(
+            ACTIVITY,
+            SYSTEM,
+            "Failed to open NVS for logging config: %s",
+            esp_err_to_name(err));
+
+        return false;
+    }
+
+    err = nvs_set_u8(
+        handle,
+        KEY_LOG_SYSTEM_AUTO_CLEAR,
+        logging_config.system_auto_clear
+            ? 1
+            : 0);
+
+    if (err != ESP_OK)
+        goto error;
+
+    err = nvs_set_u8(
+        handle,
+        KEY_LOG_ACTIVITY_AUTO_CLEAR,
+        logging_config.activity_auto_clear
+            ? 1
+            : 0);
+
+    if (err != ESP_OK)
+        goto error;
+
+    err = nvs_commit(handle);
+
+    if (err != ESP_OK)
+        goto error;
+
+    nvs_close(handle);
+
+    LOG_INFO(
+        ACTIVITY,
+        SYSTEM,
+        "Logging configuration saved");
+
+    return true;
+
+error:
+
+    LOG_ERROR(
+        ACTIVITY,
+        SYSTEM,
+        "Failed to save logging configuration: %s",
         esp_err_to_name(err));
 
     nvs_close(handle);

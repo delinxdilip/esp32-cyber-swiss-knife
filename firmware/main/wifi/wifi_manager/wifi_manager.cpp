@@ -18,6 +18,7 @@ bool WiFiManager::init()
     if (initialized)
     {
         LOG_DEBUG(
+            ACTIVITY,
             WIFI,
             "Wi-Fi manager already initialized");
 
@@ -34,6 +35,7 @@ bool WiFiManager::init()
         err == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
         LOG_WARN(
+            ACTIVITY,
             WIFI,
             "NVS requires erase and reinitialization");
 
@@ -42,6 +44,7 @@ bool WiFiManager::init()
         if (err != ESP_OK)
         {
             LOG_ERROR(
+                ACTIVITY,
                 WIFI,
                 "Failed to erase NVS: %s",
                 esp_err_to_name(err));
@@ -55,6 +58,7 @@ bool WiFiManager::init()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             WIFI,
             "NVS initialization failed: %s",
             esp_err_to_name(err));
@@ -72,6 +76,7 @@ bool WiFiManager::init()
         err != ESP_ERR_INVALID_STATE)
     {
         LOG_ERROR(
+            ACTIVITY,
             WIFI,
             "Network interface initialization failed: %s",
             esp_err_to_name(err));
@@ -89,6 +94,7 @@ bool WiFiManager::init()
         err != ESP_ERR_INVALID_STATE)
     {
         LOG_ERROR(
+            ACTIVITY,
             WIFI,
             "Event loop initialization failed: %s",
             esp_err_to_name(err));
@@ -108,6 +114,7 @@ bool WiFiManager::init()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             WIFI,
             "Wi-Fi driver initialization failed: %s",
             esp_err_to_name(err));
@@ -118,6 +125,7 @@ bool WiFiManager::init()
     initialized = true;
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Wi-Fi manager initialized");
 

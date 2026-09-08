@@ -44,6 +44,7 @@ namespace
 bool WiFiAnalyzer::analyze()
 {
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Starting Wi-Fi analysis");
 
@@ -72,6 +73,7 @@ bool WiFiAnalyzer::analyze()
     if (count == 0)
     {
         LOG_WARN(
+            ACTIVITY,
             WIFI,
             "No Wi-Fi networks available for analysis");
 
@@ -99,6 +101,7 @@ bool WiFiAnalyzer::analyze()
         // ----------------------------------------
 
         LOG_INFO(
+            ACTIVITY,
             WIFI,
             "Network: %s | RSSI: %d dBm | Signal: %s",
             network->ssid,
@@ -157,30 +160,36 @@ bool WiFiAnalyzer::analyze()
     // ----------------------------------------
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Analysis complete");
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Networks analyzed: %u",
         network_count);
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Strongest RSSI: %d dBm",
         strongest_rssi);
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Weakest RSSI: %d dBm",
         weakest_rssi);
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Open networks: %u",
         open_network_count);
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Hidden networks: %u",
         hidden_network_count);
@@ -190,6 +199,7 @@ bool WiFiAnalyzer::analyze()
         if (channel_counts[channel] > 0)
         {
             LOG_INFO(
+                ACTIVITY,
                 WIFI,
                 "Channel %u: %u network(s)",
                 channel,

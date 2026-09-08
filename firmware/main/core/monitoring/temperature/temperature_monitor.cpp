@@ -17,6 +17,7 @@ bool TemperatureMonitor::init()
     {
         LOG_DEBUG(
             SYSTEM,
+            SYSTEM,
             "Temperature monitor already initialized");
 
         return true;
@@ -34,6 +35,7 @@ bool TemperatureMonitor::init()
     {
         LOG_ERROR(
             SYSTEM,
+            SYSTEM,
             "Temperature sensor install failed: %s",
             esp_err_to_name(err));
 
@@ -48,6 +50,7 @@ bool TemperatureMonitor::init()
     {
         LOG_ERROR(
             SYSTEM,
+            SYSTEM,
             "Temperature sensor enable failed: %s",
             esp_err_to_name(err));
 
@@ -60,6 +63,7 @@ bool TemperatureMonitor::init()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "Temperature monitor initialized");
 
     return true;
@@ -70,6 +74,7 @@ bool TemperatureMonitor::get_celsius(float &temperature)
     if (!initialized || temperature_sensor == nullptr)
     {
         LOG_WARN(
+            SYSTEM,
             SYSTEM,
             "Temperature monitor is not initialized");
 
@@ -84,6 +89,7 @@ bool TemperatureMonitor::get_celsius(float &temperature)
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            SYSTEM,
             SYSTEM,
             "Temperature reading failed: %s",
             esp_err_to_name(err));
