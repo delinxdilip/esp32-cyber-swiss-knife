@@ -1,0 +1,3 @@
+.bento-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(220px,auto);gap:14px}.span-2{grid-column:span 2}.tall{min-height:280px}
+@media(max-width:900px){.bento-grid{grid-template-columns:repeat(2,1fr)}.span-2{grid-column:span 2}}
+@media(max-width:560px){.bento-grid{grid-template-columns:1fr}.span-2{grid-column:span 1}.tall{min-height:220px}}

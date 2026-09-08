@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Wi-Fi Scanner — CyberSwissKnife</title>
+
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/wifi.css">
+</head>
+
+<body>
+    <main class="app-shell">
+
+        <header class="topbar">
+            <a class="brand" href="../index.html">
+                <span class="brand-mark">CSK</span>
+
+                <span>
+                    <strong>CyberSwissKnife</strong>
+                    <small>Wireless Security Platform</small>
+                </span>
+            </a>
+
+            <div class="device-status">
+                <span
+                    id="scanner-status-dot"
+                    class="status-dot"
+                ></span>
+
+                <span id="scanner-status-text">
+                    CHECKING
+                </span>
+            </div>
+        </header>
+
+
+        <section class="page-heading">
+            <a
+                class="back-link"
+                href="index.html"
+            >
+                ← Back to Wi-Fi
+            </a>
+
+            <h1>Scanner</h1>
+
+            <p>
+                Discover nearby wireless networks and inspect
+                their basic radio characteristics.
+            </p>
+        </section>
+
+
+        <section class="scanner-controls">
+
+            <div>
+                <span class="card-label">WIRELESS DISCOVERY</span>
+
+                <p id="scan-status">
+                    Ready to scan.
+                </p>
+            </div>
+
+            <button
+                id="scan-button"
+                class="scanner-button"
+                type="button"
+            >
+                <span id="scan-button-label">
+                    Scan Networks
+                </span>
+            </button>
+
+        </section>
+
+
+        <section class="scanner-summary">
+
+            <div class="scanner-summary-item">
+                <span>NETWORKS</span>
+                <strong id="summary-count">—</strong>
+            </div>
+
+            <div class="scanner-summary-item">
+                <span>OPEN</span>
+                <strong id="summary-open">—</strong>
+            </div>
+
+            <div class="scanner-summary-item">
+                <span>HIDDEN</span>
+                <strong id="summary-hidden">—</strong>
+            </div>
+
+            <div class="scanner-summary-item">
+                <span>STRONGEST</span>
+                <strong id="summary-strongest">—</strong>
+            </div>
+
+        </section>
+
+
+        <section class="scanner-list-section">
+
+            <div class="scanner-list-header">
+                <div>
+                    <span class="card-label">DISCOVERED NETWORKS</span>
+                    <h2>Nearby Networks</h2>
+                </div>
+
+                <span
+                    id="network-list-count"
+                    class="scanner-list-count"
+                >
+                    0 networks
+                </span>
+            </div>
+
+
+            <div
+                id="network-list"
+                class="network-list"
+            >
+
+                <div
+                    id="scanner-empty"
+                    class="scanner-empty"
+                >
+                    <span class="card-icon">⌕</span>
+
+                    <h2>No scan results</h2>
+
+                    <p>
+                        Start a scan to discover nearby
+                        wireless networks.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <footer class="footer">
+            <span>CyberSwissKnife</span>
+            <span>Wi-Fi Scanner</span>
+        </footer>
+
+    </main>
+
+
+    <script src="../../js/api.js"></script>
+    <script src="../../js/wifi/scanner.js"></script>
+</body>
+</html>

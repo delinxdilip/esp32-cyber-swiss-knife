@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Wi-Fi Analyzer — CyberSwissKnife</title>
+
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/wifi.css">
+</head>
+
+<body>
+    <main class="app-shell">
+
+        <header class="topbar">
+            <a class="brand" href="../index.html">
+                <span class="brand-mark">CSK</span>
+
+                <span>
+                    <strong>CyberSwissKnife</strong>
+                    <small>Wireless Security Platform</small>
+                </span>
+            </a>
+
+            <div class="device-status">
+                <span
+                    id="analyzer-status-dot"
+                    class="status-dot"
+                ></span>
+
+                <span id="analyzer-status-text">
+                    CHECKING
+                </span>
+            </div>
+        </header>
+
+
+        <section class="page-heading">
+            <a
+                class="back-link"
+                href="index.html"
+            >
+                ← Back to Wi-Fi
+            </a>
+
+            <h1>Analyzer</h1>
+
+            <p>
+                Analyze the wireless environment using the
+                results collected by the Wi-Fi scanner.
+            </p>
+        </section>
+
+
+        <section class="analyzer-overview">
+
+            <article class="analyzer-stat">
+                <span>NETWORKS</span>
+                <strong id="analyzer-network-count">—</strong>
+            </article>
+
+            <article class="analyzer-stat">
+                <span>OPEN NETWORKS</span>
+                <strong id="analyzer-open-count">—</strong>
+            </article>
+
+            <article class="analyzer-stat">
+                <span>HIDDEN NETWORKS</span>
+                <strong id="analyzer-hidden-count">—</strong>
+            </article>
+
+            <article class="analyzer-stat">
+                <span>STRONGEST</span>
+                <strong id="analyzer-strongest">—</strong>
+            </article>
+
+            <article class="analyzer-stat">
+                <span>WEAKEST</span>
+                <strong id="analyzer-weakest">—</strong>
+            </article>
+
+        </section>
+
+
+        <section class="analyzer-grid">
+
+            <!-- Signal Analysis -->
+            <article class="bento-card analyzer-card">
+
+                <div class="card-top">
+                    <span class="card-icon">◒</span>
+                    <span class="card-label">SIGNAL ANALYSIS</span>
+                </div>
+
+                <div class="card-content">
+                    <h2>Signal Environment</h2>
+
+                    <p>
+                        Distribution of discovered networks
+                        by signal strength.
+                    </p>
+                </div>
+
+                <div
+                    id="signal-distribution"
+                    class="signal-distribution"
+                >
+                    <div class="analyzer-empty">
+                        Waiting for scan data.
+                    </div>
+                </div>
+
+            </article>
+
+
+            <!-- Channel Analysis -->
+            <article class="bento-card analyzer-card">
+
+                <div class="card-top">
+                    <span class="card-icon">▥</span>
+                    <span class="card-label">CHANNEL ANALYSIS</span>
+                </div>
+
+                <div class="card-content">
+                    <h2>Channel Usage</h2>
+
+                    <p>
+                        Channel distribution among discovered
+                        wireless networks.
+                    </p>
+                </div>
+
+                <div
+                    id="channel-distribution"
+                    class="channel-distribution"
+                >
+                    <div class="analyzer-empty">
+                        Channel data will be available when
+                        exposed by the API.
+                    </div>
+                </div>
+
+            </article>
+
+
+            <!-- Insights -->
+            <article class="bento-card analyzer-card analyzer-insights">
+
+                <div class="card-top">
+                    <span class="card-icon">◇</span>
+                    <span class="card-label">INSIGHTS</span>
+                </div>
+
+                <div class="card-content">
+                    <h2>Environment Summary</h2>
+
+                    <p id="environment-summary">
+                        Waiting for wireless scan data.
+                    </p>
+                </div>
+
+                <div class="insight-list">
+
+                    <div class="insight-item">
+                        <span>DOMINANT SIGNAL</span>
+                        <strong id="dominant-signal">—</strong>
+                    </div>
+
+                    <div class="insight-item">
+                        <span>STRONG NETWORKS</span>
+                        <strong id="strong-network-count">—</strong>
+                    </div>
+
+                    <div class="insight-item">
+                        <span>WEAK NETWORKS</span>
+                        <strong id="weak-network-count">—</strong>
+                    </div>
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <footer class="footer">
+            <span>CyberSwissKnife</span>
+            <span>Wi-Fi Analyzer</span>
+        </footer>
+
+    </main>
+
+
+    <script src="../../js/api.js"></script>
+    <script src="../../js/wifi/analyzer.js"></script>
+</body>
+</html>

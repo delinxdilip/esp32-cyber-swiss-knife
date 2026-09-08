@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>System Info — CyberSwissKnife</title>
+
+    <link
+        rel="stylesheet"
+        href="../css/base.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/layout.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/components.css">
+
+    <link
+        rel="stylesheet"
+        href="../css/system.css">
+</head>
+
+<body>
+
+<main class="system-page">
+
+    <header class="page-header">
+
+        <div>
+            <a
+                class="back-link"
+                href="/">
+                ← Dashboard
+            </a>
+
+            <h1>System Info</h1>
+
+            <p>
+                Live CyberSwissKnife system diagnostics
+            </p>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            <span id="system-status">
+                ONLINE
+            </span>
+        </div>
+
+    </header>
+
+    <section class="system-grid">
+
+        <!-- DEVICE -->
+
+        <article class="system-card card-device">
+
+            <div class="card-heading">
+                <div>
+                    <span class="card-label">
+                        DEVICE
+                    </span>
+
+                    <h2 id="device-name">
+                        —
+                    </h2>
+                </div>
+
+                <span class="card-icon">
+                    ◈
+                </span>
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span>Chip</span>
+                    <strong id="device-chip">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Revision</span>
+                    <strong id="device-revision">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>CPU Cores</span>
+                    <strong id="device-cores">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Frequency</span>
+                    <strong id="device-frequency">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>ESP-IDF</span>
+                    <strong id="device-idf">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Firmware</span>
+                    <strong id="device-firmware">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Build Date</span>
+                    <strong id="device-build">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Reset Reason</span>
+                    <strong id="device-reset">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Uptime</span>
+                    <strong id="device-uptime">—</strong>
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- MEMORY -->
+
+        <article class="system-card">
+
+            <div class="card-heading">
+
+                <div>
+                    <span class="card-label">
+                        MEMORY
+                    </span>
+
+                    <h2>Runtime Memory</h2>
+                </div>
+
+                <span class="card-icon">
+                    ▦
+                </span>
+
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span>Free Internal RAM</span>
+                    <strong id="memory-free">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Total Internal RAM</span>
+                    <strong id="memory-total">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Used Internal RAM</span>
+                    <strong id="memory-used">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Minimum Free Heap</span>
+                    <strong id="memory-min">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>PSRAM Total</span>
+                    <strong id="memory-psram-total">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>PSRAM Free</span>
+                    <strong id="memory-psram-free">—</strong>
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- FLASH -->
+
+        <article class="system-card">
+
+            <div class="card-heading">
+
+                <div>
+                    <span class="card-label">
+                        FLASH
+                    </span>
+
+                    <h2>Flash & Partitions</h2>
+                </div>
+
+                <span class="card-icon">
+                    ▤
+                </span>
+
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span>Flash Size</span>
+                    <strong id="flash-size">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Speed</span>
+                    <strong id="flash-speed">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Mode</span>
+                    <strong id="flash-mode">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Application</span>
+                    <strong id="flash-app">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>SPIFFS Partition</span>
+                    <strong id="flash-spiffs">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>SPIFFS Used</span>
+                    <strong id="flash-used">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>SPIFFS Free</span>
+                    <strong id="flash-free">—</strong>
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- HEALTH -->
+
+        <article class="system-card card-health">
+
+            <div class="card-heading">
+
+                <div>
+                    <span class="card-label">
+                        HARDWARE / HEALTH
+                    </span>
+
+                    <h2>Device Health</h2>
+                </div>
+
+                <span class="card-icon">
+                    ♧
+                </span>
+
+            </div>
+
+            <div class="health-main">
+
+                <div class="temperature">
+
+                    <span>
+                        TEMPERATURE
+                    </span>
+
+                    <strong id="health-temperature">
+                        —
+                    </strong>
+
+                    <small>
+                        Celsius
+                    </small>
+
+                </div>
+
+                <div class="health-load">
+
+                    <span>
+                        CPU LOAD
+                    </span>
+
+                    <strong id="health-cpu-load">
+                        —
+                    </strong>
+
+                    <small>
+                        Estimated
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span>CPU Cores</span>
+                    <strong id="health-cores">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Chip Revision</span>
+                    <strong id="health-revision">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Wi-Fi</span>
+                    <strong id="health-wifi">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Bluetooth</span>
+                    <strong id="health-bluetooth">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>AP State</span>
+                    <strong id="health-ap">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Connected Clients</span>
+                    <strong id="health-clients">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Task Count</span>
+                    <strong id="health-tasks">—</strong>
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- NETWORK -->
+
+        <article class="system-card">
+
+            <div class="card-heading">
+
+                <div>
+                    <span class="card-label">
+                        NETWORK
+                    </span>
+
+                    <h2>Wireless Interface</h2>
+                </div>
+
+                <span class="card-icon">
+                    ⌁
+                </span>
+
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span>Wi-Fi Status</span>
+                    <strong id="network-wifi">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>AP Status</span>
+                    <strong id="network-ap-status">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>SSID</span>
+                    <strong id="network-ssid">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>IP Address</span>
+                    <strong id="network-ip">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Channel</span>
+                    <strong id="network-channel">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Clients</span>
+                    <strong id="network-clients">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>MAC Address</span>
+                    <strong id="network-mac">—</strong>
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- STORAGE -->
+
+        <article class="system-card">
+
+            <div class="card-heading">
+
+                <div>
+                    <span class="card-label">
+                        STORAGE
+                    </span>
+
+                    <h2>Filesystem</h2>
+                </div>
+
+                <span class="card-icon">
+                    ▰
+                </span>
+
+            </div>
+
+            <div class="storage-summary">
+
+                <strong id="storage-used">
+                    —
+                </strong>
+
+                <span>
+                    used
+                </span>
+
+            </div>
+
+            <div class="storage-bar">
+                <div
+                    id="storage-progress"
+                    class="storage-progress">
+                </div>
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span>Total</span>
+                    <strong id="storage-total">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Free</span>
+                    <strong id="storage-free">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Files</span>
+                    <strong id="storage-files">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Logs</span>
+                    <strong id="storage-logs">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Web UI</span>
+                    <strong id="storage-web">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Configuration</span>
+                    <strong id="storage-config">—</strong>
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- FIRMWARE -->
+
+        <article class="system-card card-firmware">
+
+            <div class="card-heading">
+
+                <div>
+                    <span class="card-label">
+                        FIRMWARE
+                    </span>
+
+                    <h2>Build Information</h2>
+                </div>
+
+                <span class="card-icon">
+                    ◉
+                </span>
+
+            </div>
+
+            <div class="firmware-hero">
+
+                <strong id="firmware-name">
+                    CyberSwissKnife
+                </strong>
+
+                <span id="firmware-version">
+                    —
+                </span>
+
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span>Build Date</span>
+                    <strong id="firmware-date">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Build Time</span>
+                    <strong id="firmware-time">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Target</span>
+                    <strong id="firmware-target">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Framework</span>
+                    <strong id="firmware-framework">—</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>ESP-IDF</span>
+                    <strong id="firmware-idf">—</strong>
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+</main>
+
+<script src="../js/api.js"></script>
+<script src="../js/system/system-info.js"></script>
+<script src="../js/app.js"></script>
+
+</body>
+</html>
