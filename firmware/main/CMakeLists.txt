@@ -23,6 +23,8 @@ idf_component_register(
         "network/ap/ap_manager/ap_manager.cpp"
         "network/webserver/web_server.cpp"
 
+        "ui/display/gc9a01_display.cpp"
+
     INCLUDE_DIRS
         "."
 
@@ -34,4 +36,5 @@ idf_component_register(
         esp_netif
         esp_http_server
         nvs_flash
+        esp_lcd
 )
