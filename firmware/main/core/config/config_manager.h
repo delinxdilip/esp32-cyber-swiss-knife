@@ -86,6 +86,16 @@ struct HardwareConfig
 };
 
 // ============================================================
+// LOG CONFIGURATION
+// ============================================================
+
+struct LoggingConfig
+{
+    bool system_auto_clear;
+    bool activity_auto_clear;
+};
+
+// ============================================================
 // CONFIG MANAGER
 // ============================================================
 
@@ -146,16 +156,27 @@ public:
     static bool set_hardware_config(
         const HardwareConfig &config);
 
+    // --------------------------------------------------------
+    // LOG CONFIGURATION
+    // --------------------------------------------------------
+
+    static const LoggingConfig &get_logging_config();
+
+    static bool set_logging_config(
+        const LoggingConfig &config);
+
 private:
     static bool save_ap_config();
     static bool save_tft_config();
     static bool save_device_config();
     static bool save_hardware_config();
+    static bool save_logging_config();
 
     static APConfig ap_config;
     static TFTConfig tft_config;
     static DeviceConfig device_config;
     static HardwareConfig hardware_config;
+    static LoggingConfig logging_config;
 
     static void set_defaults();
 };

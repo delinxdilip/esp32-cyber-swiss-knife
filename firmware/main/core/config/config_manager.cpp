@@ -93,6 +93,16 @@ namespace
 
     constexpr const char *KEY_RGB_LED_PIN =
         "rgb_led_pin";
+    
+    // ========================================================
+    // LOG KEYS
+    // ========================================================
+    
+    constexpr const char *KEY_LOG_SYSTEM_AUTO_CLEAR =
+        "log_system_auto_clear";
+    
+    constexpr const char *KEY_LOG_ACTIVITY_AUTO_CLEAR =
+        "log_activity_auto_clear";
 }
 
 // ============================================================
@@ -106,6 +116,8 @@ TFTConfig ConfigManager::tft_config = {};
 DeviceConfig ConfigManager::device_config = {};
 
 HardwareConfig ConfigManager::hardware_config = {};
+
+LoggingConfig ConfigManager::logging_config = {};
 
 // ============================================================
 // INITIALIZATION
@@ -214,6 +226,17 @@ void ConfigManager::set_defaults()
     hardware_config.onboard_rgb_led_enabled = true;
 
     hardware_config.onboard_rgb_pin = 48;
+
+    // --------------------------------------------------------
+    // LOG DEFAULTS
+    // --------------------------------------------------------
+    std::memset(
+        &logging_config,
+        0,
+        sizeof(logging_config));
+
+    logging_config.system_auto_clear = true;
+    logging_config.activity_auto_clear = true;
 }
 
 // ============================================================
@@ -1125,6 +1148,58 @@ bool ConfigManager::load()
         needs_save = true;
     }
 
+    // ========================================================
+    // LOG CONFIGURATION
+    // ========================================================
+
+    bool logging_loaded = true;
+
+    uint8_t system_auto_clear = 1;
+    uint8_t activity_auto_clear = 1;
+
+    err = nvs_get_u8(
+        handle,
+        KEY_LOG_SYSTEM_AUTO_CLEAR,
+        &system_auto_clear);
+
+    if (err != ESP_OK)
+    {
+        logging_loaded = false;
+    }
+
+    if (logging_loaded)
+    {
+        err = nvs_get_u8(
+            handle,
+            KEY_LOG_ACTIVITY_AUTO_CLEAR,
+            &activity_auto_clear);
+
+        if (err != ESP_OK)
+        {
+            logging_loaded = false;
+        }
+    }
+
+    if (!logging_loaded)
+    {
+        LOG_INFO(
+            SYSTEM,
+            "Logging configuration missing or incomplete; using defaults");
+
+        logging_config.system_auto_clear = true;
+        logging_config.activity_auto_clear = true;
+
+        needs_save = true;
+    }
+    else
+    {
+        logging_config.system_auto_clear =
+            system_auto_clear != 0;
+
+        logging_config.activity_auto_clear =
+            activity_auto_clear != 0;
+    }
+
     nvs_close(handle);
 
     // ========================================================
@@ -1567,6 +1642,42 @@ bool ConfigManager::save()
     }
 
     // ========================================================
+    // LOGGING
+    // ========================================================
+
+    err = nvs_set_u8(
+        handle,
+        KEY_LOG_SYSTEM_AUTO_CLEAR,
+        logging_config.system_auto_clear ? 1 : 0);
+
+    if (err != ESP_OK)
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "Failed to save system log auto-clear: %s",
+            esp_err_to_name(err));
+
+        nvs_close(handle);
+        return false;
+    }
+
+    err = nvs_set_u8(
+        handle,
+        KEY_LOG_ACTIVITY_AUTO_CLEAR,
+        logging_config.activity_auto_clear ? 1 : 0);
+
+    if (err != ESP_OK)
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "Failed to save activity log auto-clear: %s",
+            esp_err_to_name(err));
+
+        nvs_close(handle);
+        return false;
+    }
+
+    // ========================================================
     // COMMIT
     // ========================================================
 
@@ -1759,6 +1870,40 @@ bool ConfigManager::set_hardware_config(
     LOG_INFO(
         SYSTEM,
         "Hardware configuration updated");
+
+    return true;
+}
+
+// ============================================================
+// LOG GET / SET
+// ============================================================
+
+const LoggingConfig &ConfigManager::get_logging_config()
+{
+    return logging_config;
+}
+
+bool ConfigManager::set_logging_config(
+    const LoggingConfig &config)
+{
+    LoggingConfig old_config = logging_config;
+
+    logging_config = config;
+
+    if (!save_logging_config())
+    {
+        logging_config = old_config;
+
+        LOG_ERROR(
+            SYSTEM,
+            "Failed to update logging configuration");
+
+        return false;
+    }
+
+    LOG_INFO(
+        SYSTEM,
+        "Logging configuration updated");
 
     return true;
 }
@@ -2121,6 +2266,70 @@ error:
     LOG_ERROR(
         SYSTEM,
         "Failed to save hardware configuration: %s",
+        esp_err_to_name(err));
+
+    nvs_close(handle);
+
+    return false;
+}
+
+// ============================================================
+// Logging CONFIG SAVE
+// ============================================================
+
+bool ConfigManager::save_logging_config()
+{
+    nvs_handle_t handle;
+
+    esp_err_t err = nvs_open(
+        NVS_NAMESPACE,
+        NVS_READWRITE,
+        &handle);
+
+    if (err != ESP_OK)
+    {
+        LOG_ERROR(
+            SYSTEM,
+            "Failed to open NVS for logging config: %s",
+            esp_err_to_name(err));
+
+        return false;
+    }
+
+    err = nvs_set_u8(
+        handle,
+        KEY_LOG_SYSTEM_AUTO_CLEAR,
+        logging_config.system_auto_clear ? 1 : 0);
+
+    if (err != ESP_OK)
+        goto error;
+
+    err = nvs_set_u8(
+        handle,
+        KEY_LOG_ACTIVITY_AUTO_CLEAR,
+        logging_config.activity_auto_clear ? 1 : 0);
+
+    if (err != ESP_OK)
+        goto error;
+
+    err = nvs_commit(handle);
+
+    if (err != ESP_OK)
+        goto error;
+
+    nvs_close(handle);
+
+    LOG_INFO(
+        SYSTEM,
+        "Logging configuration saved");
+
+    return true;
+
+error:
+
+    LOG_ERROR(
+        SYSTEM,
+        "Failed to save logging configuration: %s",
         esp_err_to_name(err));
 
     nvs_close(handle);
