@@ -363,6 +363,7 @@ namespace
         if (result != ESP_OK)
         {
             LOG_ERROR(
+                ACTIVITY,
                 WEB,
                 "Failed to get AP configuration: %s",
                 esp_err_to_name(result));
@@ -382,6 +383,7 @@ namespace
         if (result != ESP_OK)
         {
             LOG_ERROR(
+                ACTIVITY,
                 WEB,
                 "Failed to get AP station list: %s",
                 esp_err_to_name(result));
@@ -414,6 +416,7 @@ namespace
         if (result != ESP_OK)
         {
             LOG_ERROR(
+                ACTIVITY,
                 WEB,
                 "Failed to get AP IP information: %s",
                 esp_err_to_name(result));
@@ -434,6 +437,7 @@ namespace
         if (result != ESP_OK)
         {
             LOG_ERROR(
+                ACTIVITY,
                 WEB,
                 "Failed to get AP MAC address: %s",
                 esp_err_to_name(result));
@@ -1306,6 +1310,7 @@ namespace
         }
 
         LOG_DEBUG(
+            ACTIVITY,
             WEB,
             "Static request: %s -> %s",
             request->uri,
@@ -1391,6 +1396,7 @@ bool WebServer::init()
     if (server != nullptr)
     {
         LOG_WARN(
+            ACTIVITY,
             WEB,
             "Web server already initialized");
 
@@ -1414,6 +1420,7 @@ bool WebServer::init()
         if (result != ESP_OK)
         {
             LOG_ERROR(
+                ACTIVITY,
                 WEB,
                 "SPIFFS mount failed: %s",
                 esp_err_to_name(result));
@@ -1432,6 +1439,7 @@ bool WebServer::init()
                 &used) == ESP_OK)
         {
             LOG_INFO(
+                ACTIVITY,
                 WEB,
                 "SPIFFS mounted: %u / %u bytes used",
                 static_cast<unsigned int>(
@@ -1467,6 +1475,7 @@ bool WebServer::init()
     if (start_result != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             WEB,
             "HTTP server start failed: %s",
             esp_err_to_name(start_result));
@@ -1576,6 +1585,7 @@ bool WebServer::init()
     if (static_result != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             WEB,
             "Failed to register static file handler: %s",
             esp_err_to_name(static_result));
@@ -1593,6 +1603,7 @@ bool WebServer::init()
         not_found_handler);
 
     LOG_INFO(
+        ACTIVITY,
         WEB,
         "HTTP server started on port 80");
 

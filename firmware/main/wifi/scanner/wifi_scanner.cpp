@@ -56,6 +56,7 @@ bool WiFiScanner::scan()
     if (scanning)
     {
         LOG_WARN(
+            ACTIVITY,
             WIFI,
             "Wi-Fi scan already in progress");
 
@@ -65,6 +66,7 @@ bool WiFiScanner::scan()
     scanning = true;
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Starting Wi-Fi scan");
 
@@ -105,6 +107,7 @@ bool WiFiScanner::scan()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             WIFI,
             "Failed to set APSTA mode: %s",
             esp_err_to_name(err));
@@ -129,6 +132,7 @@ bool WiFiScanner::scan()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             WIFI,
             "Wi-Fi scan failed to start: %s",
             esp_err_to_name(err));
@@ -147,6 +151,7 @@ bool WiFiScanner::scan()
     if (err != ESP_OK)
     {
         LOG_ERROR(
+            ACTIVITY,
             WIFI,
             "Failed to get Wi-Fi scan count: %s",
             esp_err_to_name(err));
@@ -157,6 +162,7 @@ bool WiFiScanner::scan()
     }
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Networks discovered: %u",
         discovered_count);
@@ -186,6 +192,7 @@ bool WiFiScanner::scan()
         if (records == nullptr)
         {
             LOG_ERROR(
+                ACTIVITY,
                 WIFI,
                 "Failed to allocate scan records");
 
@@ -205,6 +212,7 @@ bool WiFiScanner::scan()
         if (err != ESP_OK)
         {
             LOG_ERROR(
+                ACTIVITY,
                 WIFI,
                 "Failed to get Wi-Fi records: %s",
                 esp_err_to_name(err));
@@ -280,6 +288,7 @@ bool WiFiScanner::scan()
                     record.authmode);
 
             LOG_INFO(
+                ACTIVITY,
                 WIFI,
                 "Network %u: SSID=\"%s\" RSSI=%d Channel=%u",
                 network_count,
@@ -307,6 +316,7 @@ bool WiFiScanner::scan()
     scanning = false;
 
     LOG_INFO(
+        ACTIVITY,
         WIFI,
         "Wi-Fi scan complete: %u networks stored",
         network_count);
@@ -323,6 +333,7 @@ bool WiFiScanner::scan()
     if (!WiFiAnalyzer::analyze())
     {
         LOG_WARN(
+            ACTIVITY,
             WIFI,
             "Wi-Fi analysis failed after scan");
     }

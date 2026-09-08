@@ -549,6 +549,7 @@ void SystemInfo::print()
     {
         LOG_ERROR(
             SYSTEM,
+            SYSTEM,
             "Failed to collect system information");
 
         return;
@@ -556,12 +557,14 @@ void SystemInfo::print()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "Chip: %s Rev %lu",
         info.chip_name,
         static_cast<unsigned long>(
             info.chip_revision));
 
     LOG_INFO(
+        SYSTEM,
         SYSTEM,
         "CPU: %lu cores @ %lu MHz",
         static_cast<unsigned long>(
@@ -571,10 +574,12 @@ void SystemInfo::print()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "ESP-IDF: %s",
         info.esp_idf_version);
 
     LOG_INFO(
+        SYSTEM,
         SYSTEM,
         "Firmware: %s v%s",
         info.firmware_name,
@@ -582,17 +587,20 @@ void SystemInfo::print()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "Build: %s %s",
         info.firmware_build_date,
         info.firmware_build_time);
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "Free internal RAM: %lu KB",
         static_cast<unsigned long>(
             info.free_internal_ram / 1024));
 
     LOG_INFO(
+        SYSTEM,
         SYSTEM,
         "PSRAM: %lu KB total / %lu KB free",
         static_cast<unsigned long>(
@@ -601,6 +609,7 @@ void SystemInfo::print()
             info.psram_free / 1024));
 
     LOG_INFO(
+        SYSTEM,
         SYSTEM,
         "Flash: %lu MB @ %lu MHz %s",
         static_cast<unsigned long>(
@@ -612,10 +621,12 @@ void SystemInfo::print()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "Temperature: %.2f C",
         info.temperature_celsius);
 
     LOG_INFO(
+        SYSTEM,
         SYSTEM,
         "Tasks: %lu",
         static_cast<unsigned long>(
@@ -623,10 +634,12 @@ void SystemInfo::print()
 
     LOG_INFO(
         SYSTEM,
+        SYSTEM,
         "CPU load: %.1f%%",
         info.cpu_load_percent);
 
     LOG_INFO(
+        SYSTEM,
         SYSTEM,
         "AP: %s / %s / channel %lu / clients %lu",
         info.ap_status,
@@ -637,6 +650,7 @@ void SystemInfo::print()
             info.ap_clients));
 
     LOG_INFO(
+        SYSTEM,
         SYSTEM,
         "Storage: %lu KB used / %lu KB free",
         static_cast<unsigned long>(
