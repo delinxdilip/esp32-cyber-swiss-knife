@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include "ui/display/display_types.h"
+
 // ============================================================
 // AP CONFIGURATION
 // ============================================================
@@ -15,45 +17,6 @@ struct APConfig
 
     uint8_t max_connections;
     uint8_t channel;
-};
-
-// ============================================================
-// TFT CONFIGURATION
-// ============================================================
-
-enum class TFTController : uint8_t
-{
-    GC9A01 = 0
-};
-
-enum class TFTShape : uint8_t
-{
-    ROUND = 0
-};
-
-enum class TFTRotation : uint8_t
-{
-    ROTATION_0   = 0,
-    ROTATION_90  = 1,
-    ROTATION_180 = 2,
-    ROTATION_270 = 3
-};
-
-struct TFTConfig
-{
-    bool enabled;
-
-    TFTController controller;
-    TFTShape shape;
-
-    uint16_t width;
-    uint16_t height;
-
-    TFTRotation rotation;
-
-    bool touch;
-
-    uint32_t color;
 };
 
 // ============================================================

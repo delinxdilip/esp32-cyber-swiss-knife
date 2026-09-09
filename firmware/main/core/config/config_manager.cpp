@@ -73,10 +73,10 @@ namespace
         "web_ui_title";
 
     constexpr const char *KEY_AP_IDENTIFICATION =
-        "ap_identification";
+        "ap_ident";
 
     constexpr const char *KEY_DEVICE_DISCOVERY =
-        "device_discovery";
+        "dev_discovery";
 
     constexpr const char *KEY_BLUETOOTH_NAME =
         "bluetooth_name";
@@ -99,10 +99,10 @@ namespace
     // ========================================================
 
     constexpr const char *KEY_LOG_SYSTEM_AUTO_CLEAR =
-        "log_system_auto_clear";
+        "log_sys_clear";
 
     constexpr const char *KEY_LOG_ACTIVITY_AUTO_CLEAR =
-        "log_activity_auto_clear";
+        "log_act_clear";
 }
 
 

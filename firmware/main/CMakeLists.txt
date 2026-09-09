@@ -48,7 +48,9 @@ idf_component_register(
         # ====================================================
         # UI
         # ====================================================
-        "ui/display/gc9a01_display.cpp"
+        "ui/display/display_manager.cpp"
+        "ui/display/drivers/gc9a01/gc9a01_driver.cpp"
+        "ui/display/display_test.cpp"
 
     INCLUDE_DIRS
         "."

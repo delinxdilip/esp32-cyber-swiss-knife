@@ -3,14 +3,18 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "nvs_flash.h"
+
 #include "core/logging/logger.h"
 #include "core/system/system_info.h"
 #include "core/monitoring/temperature/temperature_monitor.h"
 #include "core/monitoring/uptime/uptime_monitor.h"
 #include "core/config/config_manager.h"
 
-#include "wifi/wifi_manager/wifi_manager.h"
+#include "ui/display/display_manager.h"
+#include "ui/display/display_test.h"
 
+#include "wifi/wifi_manager/wifi_manager.h"
 #include "network/ap/ap_manager/ap_manager.h"
 #include "network/webserver/web_server.h"
 
@@ -84,18 +88,45 @@ void SystemManager::init()
         (unsigned long)uptime_secs);
 
     // ----------------------------------------
-    // Wi-Fi
+    // NVS
     // ----------------------------------------
 
-    if (!WiFiManager::init())
+    esp_err_t nvs_error =
+        nvs_flash_init();
+
+    if (nvs_error == ESP_ERR_NVS_NO_FREE_PAGES ||
+        nvs_error == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        LOG_WARN(
+            SYSTEM,
+            CONFIG,
+            "NVS requires erase and reinitialization");
+
+        nvs_error =
+            nvs_flash_erase();
+
+        if (nvs_error == ESP_OK)
+        {
+            nvs_error =
+                nvs_flash_init();
+        }
+    }
+
+    if (nvs_error != ESP_OK)
     {
         LOG_ERROR(
             SYSTEM,
-            SYSTEM,
-            "Wi-Fi initialization failed");
+            CONFIG,
+            "NVS initialization failed: %s",
+            esp_err_to_name(nvs_error));
 
         return;
     }
+
+    LOG_INFO(
+        SYSTEM,
+        CONFIG,
+        "NVS initialized successfully");
 
     // ----------------------------------------
     // Configuration
@@ -105,8 +136,42 @@ void SystemManager::init()
     {
         LOG_ERROR(
             SYSTEM,
-            SYSTEM,
+            CONFIG,
             "Configuration initialization failed");
+
+        return;
+    }
+
+    // ----------------------------------------
+    // Display
+    // ----------------------------------------
+
+    if (!DisplayManager::initialize())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            HARDWARE,
+            "Display initialization failed");
+
+        return;
+    }
+
+    // ----------------------------------------
+    // Display test
+    // ----------------------------------------
+
+    DisplayTest::render();
+
+    // ----------------------------------------
+    // Wi-Fi
+    // ----------------------------------------
+
+    if (!WiFiManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            WIFI,
+            "Wi-Fi initialization failed");
 
         return;
     }
@@ -119,7 +184,7 @@ void SystemManager::init()
     {
         LOG_ERROR(
             SYSTEM,
-            SYSTEM,
+            NETWORK,
             "Access Point initialization failed");
 
         return;
@@ -133,7 +198,7 @@ void SystemManager::init()
     {
         LOG_ERROR(
             SYSTEM,
-            SYSTEM,
+            WEB,
             "HTTP server initialization failed");
 
         return;
@@ -157,7 +222,7 @@ void SystemManager::init()
 
     LOG_INFO(
         SYSTEM,
-        SYSTEM,
+        WIFI,
         "Wi-Fi scanning is available on demand");
 
     LOG_INFO(
