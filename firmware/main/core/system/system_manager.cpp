@@ -12,7 +12,9 @@
 #include "core/config/config_manager.h"
 
 #include "ui/display/display_manager.h"
-#include "ui/display/display_test.h"
+#include "ui/startup/startup_animation.h"
+
+#include "hardware/input/joystick/joystick_manager.h"
 
 #include "wifi/wifi_manager/wifi_manager.h"
 #include "network/ap/ap_manager/ap_manager.h"
@@ -157,10 +159,24 @@ void SystemManager::init()
     }
 
     // ----------------------------------------
-    // Display test
+    // CyberBoot
     // ----------------------------------------
 
-    DisplayTest::render();
+    StartupAnimation::play();
+
+    // ----------------------------------------
+    // Joystick
+    // ----------------------------------------
+
+    if (!JoystickManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            HARDWARE,
+            "Joystick initialization failed");
+
+        return;
+    }
 
     // ----------------------------------------
     // Wi-Fi

@@ -51,6 +51,12 @@ idf_component_register(
         "ui/display/display_manager.cpp"
         "ui/display/drivers/gc9a01/gc9a01_driver.cpp"
         "ui/display/display_test.cpp"
+        "ui/startup/startup_animation.cpp"
+
+        # ====================================================
+        # Joystick
+        # ====================================================
+        "hardware/input/joystick/joystick_manager.cpp"
 
     INCLUDE_DIRS
         "."
