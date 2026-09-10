@@ -185,7 +185,7 @@ void ConfigManager::set_defaults()
 
     tft_config.touch = false;
 
-    tft_config.color = 0xFFFFFF;
+    tft_config.color = 0xFF5C00;
 
     // --------------------------------------------------------
     // DEVICE DEFAULTS
@@ -215,7 +215,7 @@ void ConfigManager::set_defaults()
         "CyberSwissKnife",
         sizeof(device_config.bluetooth_name) - 1);
 
-    device_config.tft_color_theme = 0xFFFFFF;
+    device_config.tft_color_theme = 0xFF5C00;
 
     // --------------------------------------------------------
     // HARDWARE DEFAULTS
@@ -819,7 +819,7 @@ bool ConfigManager::load()
         tft_config.height = 240;
         tft_config.rotation = TFTRotation::ROTATION_0;
         tft_config.touch = false;
-        tft_config.color = 0xFFFFFF;
+        tft_config.color = 0xFF5C00;
 
         needs_save = true;
     }
@@ -837,7 +837,7 @@ bool ConfigManager::load()
         tft_config.height = 240;
         tft_config.rotation = TFTRotation::ROTATION_0;
         tft_config.touch = false;
-        tft_config.color = 0xFFFFFF;
+        tft_config.color = 0xFF5C00;
 
         needs_save = true;
     }
@@ -959,7 +959,7 @@ bool ConfigManager::load()
 
         if (err == ESP_ERR_NVS_NOT_FOUND)
         {
-            device_config.tft_color_theme = 0xFFFFFF;
+            device_config.tft_color_theme = 0xFF5C00;
             needs_save = true;
         }
         else if (err != ESP_OK)
@@ -998,7 +998,7 @@ bool ConfigManager::load()
             "CyberSwissKnife",
             sizeof(device_config.bluetooth_name) - 1);
 
-        device_config.tft_color_theme = 0xFFFFFF;
+        device_config.tft_color_theme = 0xFF5C00;
 
         needs_save = true;
     }
@@ -1032,7 +1032,7 @@ bool ConfigManager::load()
             "CyberSwissKnife",
             sizeof(device_config.bluetooth_name) - 1);
 
-        device_config.tft_color_theme = 0xFFFFFF;
+        device_config.tft_color_theme = 0xFF5C00;
 
         needs_save = true;
     }

@@ -13,6 +13,9 @@
 
 #include "ui/display/display_manager.h"
 #include "ui/startup/startup_animation.h"
+#include "ui/text/text_renderer.h"
+#include "ui/ui_manager.h"
+#include "ui/theme/ui_theme.h"
 
 #include "hardware/input/joystick/joystick_manager.h"
 
@@ -157,12 +160,34 @@ void SystemManager::init()
 
         return;
     }
+    DisplayManager::set_rotation(
+    TFTRotation::ROTATION_180);
+
+    // ----------------------------------------
+    // UI Theme
+    // ----------------------------------------
+
+    UITheme::init();
 
     // ----------------------------------------
     // CyberBoot
     // ----------------------------------------
 
     StartupAnimation::play();
+
+    // ----------------------------------------
+    // User Interface
+    // ----------------------------------------
+
+    if (!UIManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            HARDWARE,
+            "UI initialization failed");
+
+        return;
+    }
 
     // ----------------------------------------
     // Joystick

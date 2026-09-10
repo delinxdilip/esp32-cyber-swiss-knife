@@ -525,34 +525,81 @@ bool GC9A01Driver::set_rotation(
     int x_gap = 0;
     int y_gap = 0;
     bool swap_xy = false;
+    bool mirror_x = false;
+    bool mirror_y = false;
+
+    /*
+     * This GC9A01 module has a different physical mounting
+     * orientation from the reference orientation used by the
+     * generic MADCTL rotation mapping.
+     *
+     * The panel was physically validated using:
+     *
+     *     ROTATION_0   -> 0x88
+     *     ROTATION_90  -> 0x68
+     *     ROTATION_180 -> 0x48
+     *     ROTATION_270 -> 0xA8
+     *
+     * BGR is supplied separately by panel_config and therefore
+     * remains part of the MADCTL value automatically.
+     */
 
     switch (requested_rotation)
     {
         case TFTRotation::ROTATION_0:
-            swap_xy = false;
-            x_gap = 0;
-            y_gap = 0;
+
+            swap_xy =
+                false;
+
+            mirror_x =
+                false;
+
+            mirror_y =
+                true;
+
             break;
 
         case TFTRotation::ROTATION_90:
-            swap_xy = true;
-            x_gap = 0;
-            y_gap = 0;
+
+            swap_xy =
+                true;
+
+            mirror_x =
+                true;
+
+            mirror_y =
+                false;
+
             break;
 
         case TFTRotation::ROTATION_180:
-            swap_xy = false;
-            x_gap = 0;
-            y_gap = 0;
+
+            swap_xy =
+                false;
+
+            mirror_x =
+                true;
+
+            mirror_y =
+                false;
+
             break;
 
         case TFTRotation::ROTATION_270:
-            swap_xy = true;
-            x_gap = 0;
-            y_gap = 0;
+
+            swap_xy =
+                true;
+
+            mirror_x =
+                false;
+
+            mirror_y =
+                true;
+
             break;
 
         default:
+
             LOG_ERROR(
                 SYSTEM,
                 HARDWARE,
@@ -576,18 +623,6 @@ bool GC9A01Driver::set_rotation(
 
         return false;
     }
-
-    bool mirror_x =
-        requested_rotation ==
-            TFTRotation::ROTATION_180 ||
-        requested_rotation ==
-            TFTRotation::ROTATION_270;
-
-    bool mirror_y =
-        requested_rotation ==
-            TFTRotation::ROTATION_90 ||
-        requested_rotation ==
-            TFTRotation::ROTATION_180;
 
     error =
         esp_lcd_panel_mirror(

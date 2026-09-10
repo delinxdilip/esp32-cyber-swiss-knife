@@ -52,6 +52,11 @@ idf_component_register(
         "ui/display/drivers/gc9a01/gc9a01_driver.cpp"
         "ui/display/display_test.cpp"
         "ui/startup/startup_animation.cpp"
+        "ui/text/text_renderer.cpp"
+        "ui/ui_manager.cpp"
+        "ui/screens/home_screen.cpp"
+        "ui/theme/ui_theme.cpp"
+        "ui/screens/wifi_screen.cpp"
 
         # ====================================================
         # Joystick

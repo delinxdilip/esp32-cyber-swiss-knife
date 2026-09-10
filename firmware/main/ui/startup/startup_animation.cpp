@@ -6,6 +6,7 @@
 #include "freertos/task.h"
 
 #include "ui/display/display_manager.h"
+#include "ui/theme/ui_theme.h"
 
 // ------------------------------------------------------------
 // CYBERBOOT CONFIGURATION
@@ -25,12 +26,6 @@ namespace
     constexpr uint32_t FRAME_DELAY_MS =
         33;
 
-    constexpr uint32_t COLOR_BLACK =
-        0x000000;
-
-    constexpr uint32_t COLOR_WHITE =
-        0xFFFFFF;
-
     constexpr float PI =
         3.14159265358979323846f;
 }
@@ -40,7 +35,7 @@ namespace
 // ------------------------------------------------------------
 
 void draw_radial_glyph(
-    float progress)
+    float *progress)
 {
     const int16_t center_x =
         FRAME_WIDTH / 2;
@@ -50,7 +45,7 @@ void draw_radial_glyph(
 
     const float radius =
         8.0f +
-        (progress * 42.0f);
+        (*progress * 42.0f);
 
     constexpr uint16_t SPOKE_COUNT =
         8;
@@ -94,20 +89,20 @@ void draw_radial_glyph(
             y0,
             x1,
             y1,
-            COLOR_WHITE);
+            UITheme::primary());
     }
 
     DisplayManager::draw_circle(
         center_x,
         center_y,
         static_cast<uint16_t>(radius),
-        COLOR_WHITE);
+        UITheme::primary());
 
     DisplayManager::fill_circle(
         center_x,
         center_y,
         4,
-        COLOR_WHITE);
+        UITheme::primary());
 }
 
 // ------------------------------------------------------------
@@ -115,7 +110,7 @@ void draw_radial_glyph(
 // ------------------------------------------------------------
 
 void draw_tool_markers(
-    float progress)
+    float *progress)
 {
     const int16_t center_x =
         FRAME_WIDTH / 2;
@@ -134,7 +129,7 @@ void draw_tool_markers(
          index++)
     {
         float marker_progress =
-            progress -
+            *progress -
             (static_cast<float>(index) * 0.12f);
 
         if (marker_progress <= 0.0f)
@@ -169,7 +164,7 @@ void draw_tool_markers(
             x,
             y,
             3,
-            COLOR_WHITE);
+            UITheme::primary());
     }
 }
 
@@ -178,16 +173,16 @@ void draw_tool_markers(
 // ------------------------------------------------------------
 
 void draw_cyber_mark(
-    float progress)
+    float *progress)
 {
-    if (progress <= 0.0f)
+    if (*progress <= 0.0f)
     {
         return;
     }
 
-    if (progress > 1.0f)
+    if (*progress > 1.0f)
     {
-        progress = 1.0f;
+        *progress = 1.0f;
     }
 
     const int16_t center_x =
@@ -202,14 +197,14 @@ void draw_cyber_mark(
     const int16_t line_width =
         static_cast<int16_t>(
             24 +
-            (progress * 56));
+            (*progress * 56));
 
     DisplayManager::fill_rect(
         center_x - (line_width / 2),
         line_y,
         line_width,
         2,
-        COLOR_WHITE);
+        UITheme::primary());
 }
 
 // ------------------------------------------------------------
@@ -228,27 +223,27 @@ void draw_final_mark()
         center_x,
         center_y,
         48,
-        COLOR_WHITE);
+        UITheme::primary());
 
     DisplayManager::fill_rect(
         center_x - 30,
         center_y - 1,
         60,
         2,
-        COLOR_WHITE);
+        UITheme::primary());
 
     DisplayManager::fill_rect(
         center_x - 1,
         center_y - 30,
         2,
         60,
-        COLOR_WHITE);
+        UITheme::primary());
 
     DisplayManager::fill_circle(
         center_x,
         center_y,
         5,
-        COLOR_WHITE);
+        UITheme::primary());
 }
 
 // ------------------------------------------------------------
@@ -256,14 +251,14 @@ void draw_final_mark()
 // ------------------------------------------------------------
 
 void draw_frame(
-    uint16_t frame)
+    uint16_t *frame)
 {
     float progress =
-        static_cast<float>(frame) /
+        static_cast<float>(*frame) /
         static_cast<float>(FRAME_COUNT - 1);
 
     DisplayManager::clear(
-        COLOR_BLACK);
+        UITheme::background());
 
     // --------------------------------------------------------
     // CORE GLYPH
@@ -275,7 +270,7 @@ void draw_frame(
             : 1.0f;
 
     draw_radial_glyph(
-        glyph_progress);
+        &glyph_progress);
 
     // --------------------------------------------------------
     // TOOL MARKERS
@@ -287,7 +282,7 @@ void draw_frame(
             : 1.0f;
 
     draw_tool_markers(
-        marker_progress);
+        &marker_progress);
 
     // --------------------------------------------------------
     // CYBER MARK
@@ -299,7 +294,7 @@ void draw_frame(
             : (progress - 0.72f) / 0.28f;
 
     draw_cyber_mark(
-        mark_progress);
+        &mark_progress);
 
     // --------------------------------------------------------
     // FINAL GLYPH
@@ -308,7 +303,7 @@ void draw_frame(
     if (progress >= 0.90f)
     {
         DisplayManager::clear(
-            COLOR_BLACK);
+            UITheme::background());
 
         draw_final_mark();
 
@@ -337,7 +332,7 @@ void StartupAnimation::play()
          frame++)
     {
         draw_frame(
-            frame);
+            &frame);
 
         vTaskDelay(
             pdMS_TO_TICKS(
@@ -349,7 +344,7 @@ void StartupAnimation::play()
     // --------------------------------------------------------
 
     DisplayManager::clear(
-        COLOR_BLACK);
+        UITheme::background());
 
     DisplayManager::update();
 }
