@@ -13,9 +13,9 @@
 
 #include "ui/display/display_manager.h"
 #include "ui/startup/startup_animation.h"
-#include "ui/text/text_renderer.h"
 #include "ui/ui_manager.h"
 #include "ui/theme/ui_theme.h"
+#include "ui/layout/ui_layout.h"
 
 #include "hardware/input/joystick/joystick_manager.h"
 
@@ -148,6 +148,12 @@ void SystemManager::init()
     }
 
     // ----------------------------------------
+    // UI Layout
+    // ----------------------------------------
+
+    UILayout::init();
+
+    // ----------------------------------------
     // Display
     // ----------------------------------------
 
@@ -170,6 +176,20 @@ void SystemManager::init()
     UITheme::init();
 
     // ----------------------------------------
+    // Joystick
+    // ----------------------------------------
+
+    if (!JoystickManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            HARDWARE,
+            "Joystick initialization failed");
+
+        return;
+    }
+
+    // ----------------------------------------
     // CyberBoot
     // ----------------------------------------
 
@@ -185,20 +205,6 @@ void SystemManager::init()
             SYSTEM,
             HARDWARE,
             "UI initialization failed");
-
-        return;
-    }
-
-    // ----------------------------------------
-    // Joystick
-    // ----------------------------------------
-
-    if (!JoystickManager::init())
-    {
-        LOG_ERROR(
-            SYSTEM,
-            HARDWARE,
-            "Joystick initialization failed");
 
         return;
     }

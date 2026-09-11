@@ -57,6 +57,7 @@ idf_component_register(
         "ui/screens/home_screen.cpp"
         "ui/theme/ui_theme.cpp"
         "ui/screens/wifi_screen.cpp"
+        "ui/layout/ui_layout.cpp"
 
         # ====================================================
         # Joystick

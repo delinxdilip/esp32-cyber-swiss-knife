@@ -122,20 +122,25 @@ void WiFiScreen::render_main()
     DisplayManager::clear(
         UITheme::background());
 
-    draw_title(
-        "WI-FI");
+    // --------------------------------------------------------
+    // NAVIGATION
+    // --------------------------------------------------------
+
+    draw_centered(
+        "WI-FI",
+        TITLE_Y,
+        TextSize::MEDIUM,
+        UITheme::primary());
+
+    // --------------------------------------------------------
+    // OPEN PROMPT
+    // --------------------------------------------------------
 
     draw_centered(
         "PRESS TO OPEN",
-        106,
+        198,
         TextSize::SMALL,
         UITheme::secondary());
-
-    draw_centered(
-        "LEFT TO BACK",
-        142,
-        TextSize::SMALL,
-        UITheme::disabled());
 
     DisplayManager::update();
 }
