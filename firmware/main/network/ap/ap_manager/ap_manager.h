@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "core/config/config_manager.h"
 
 class APManager
@@ -11,4 +13,8 @@ public:
         const APConfig &config);
 
     static bool is_initialized();
+
+    static bool is_running();
+
+    static uint8_t get_client_count();
 };

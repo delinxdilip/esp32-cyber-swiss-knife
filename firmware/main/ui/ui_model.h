@@ -24,9 +24,13 @@ struct UIModel
 
     uint32_t uptime_seconds;
 
+    char time[6];
+
     // --------------------------------------------------------
     // NETWORK
     // --------------------------------------------------------
+
+    bool wifi_enabled;
 
     bool wifi_connected;
 
@@ -36,9 +40,19 @@ struct UIModel
 
     uint8_t ap_clients;
 
+    uint8_t ap_max_connections;
+
     // --------------------------------------------------------
     // BLUETOOTH
     // --------------------------------------------------------
 
     bool bluetooth_enabled;
+
+    bool bluetooth_connected;
+
+    // --------------------------------------------------------
+    // FIRMWARE
+    // --------------------------------------------------------
+
+    const char *firmware_version;
 };

@@ -3,28 +3,12 @@
 #include "core/logging/logger.h"
 
 #include "esp_err.h"
-#include "esp_event.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
 #include "nvs_flash.h"
 
-namespace
-{
-    bool initialized = false;
-}
-
 bool WiFiManager::init()
 {
-    if (initialized)
-    {
-        LOG_DEBUG(
-            ACTIVITY,
-            WIFI,
-            "Wi-Fi manager already initialized");
-
-        return true;
-    }
-
     // ----------------------------------------
     // NVS
     // ----------------------------------------
@@ -121,8 +105,6 @@ bool WiFiManager::init()
 
         return false;
     }
-
-    initialized = true;
 
     LOG_INFO(
         ACTIVITY,

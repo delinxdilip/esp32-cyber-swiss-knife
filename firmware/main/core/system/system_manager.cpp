@@ -1,9 +1,12 @@
 #include "system_manager.h"
 
+#include <ctime>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "nvs_flash.h"
+#include "esp_sntp.h"
 
 #include "core/logging/logger.h"
 #include "core/system/system_info.h"
@@ -23,6 +26,26 @@
 #include "network/ap/ap_manager/ap_manager.h"
 #include "network/webserver/web_server.h"
 
+namespace
+{
+    void initialize_time()
+    {
+        esp_sntp_setoperatingmode(
+            SNTP_OPMODE_POLL);
+
+        esp_sntp_setservername(
+            0,
+            "pool.ntp.org");
+
+        esp_sntp_init();
+
+        LOG_INFO(
+            SYSTEM,
+            SYSTEM,
+            "SNTP time synchronization initialized");
+    }
+}
+
 void SystemManager::init()
 {
     Logger::init();
@@ -31,9 +54,7 @@ void SystemManager::init()
      * Development delay.
      *
      * This gives the USB Serial/JTAG console
-     * time to reconnect after boot so that
-     * startup logs are visible during
-     * development.
+     * time to reconnect after boot.
      */
     vTaskDelay(
         pdMS_TO_TICKS(3000));
@@ -147,6 +168,65 @@ void SystemManager::init()
         return;
     }
 
+    LOG_INFO(
+        SYSTEM,
+        CONFIG,
+        "Configuration loaded successfully");
+
+    // ----------------------------------------
+    // Wi-Fi
+    // ----------------------------------------
+
+    LOG_INFO(
+        SYSTEM,
+        WIFI,
+        "Initializing Wi-Fi");
+
+    if (!WiFiManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            WIFI,
+            "Wi-Fi initialization failed");
+
+        return;
+    }
+
+    LOG_INFO(
+        SYSTEM,
+        WIFI,
+        "Wi-Fi initialized successfully");
+
+    // ----------------------------------------
+    // Access Point
+    // ----------------------------------------
+
+    LOG_INFO(
+        SYSTEM,
+        NETWORK,
+        "Initializing Access Point");
+
+    if (!APManager::init())
+    {
+        LOG_ERROR(
+            SYSTEM,
+            NETWORK,
+            "Access Point initialization failed");
+
+        return;
+    }
+
+    LOG_INFO(
+        SYSTEM,
+        NETWORK,
+        "Access Point initialized successfully");
+
+    // ----------------------------------------
+    // Time
+    // ----------------------------------------
+
+    initialize_time();
+
     // ----------------------------------------
     // UI Layout
     // ----------------------------------------
@@ -166,8 +246,9 @@ void SystemManager::init()
 
         return;
     }
+
     DisplayManager::set_rotation(
-    TFTRotation::ROTATION_180);
+        TFTRotation::ROTATION_180);
 
     // ----------------------------------------
     // UI Theme
@@ -210,34 +291,6 @@ void SystemManager::init()
     }
 
     // ----------------------------------------
-    // Wi-Fi
-    // ----------------------------------------
-
-    if (!WiFiManager::init())
-    {
-        LOG_ERROR(
-            SYSTEM,
-            WIFI,
-            "Wi-Fi initialization failed");
-
-        return;
-    }
-
-    // ----------------------------------------
-    // Access Point
-    // ----------------------------------------
-
-    if (!APManager::init())
-    {
-        LOG_ERROR(
-            SYSTEM,
-            NETWORK,
-            "Access Point initialization failed");
-
-        return;
-    }
-
-    // ----------------------------------------
     // HTTP server
     // ----------------------------------------
 
@@ -252,19 +305,13 @@ void SystemManager::init()
     }
 
     /*
-     * IMPORTANT:
-     *
-     * Wi-Fi scanning is no longer performed
-     * automatically during boot.
-     *
-     * V1 performs scans only when requested
-     * through:
+     * Wi-Fi scanning is performed only when
+     * requested through:
      *
      *     GET /api/wifi/scan
      *
-     * This keeps the AP and web server usable
-     * after boot and makes the radio behavior
-     * easier for beginners to understand.
+     * This prevents automatic scanning from
+     * interfering with AP operation.
      */
 
     LOG_INFO(
