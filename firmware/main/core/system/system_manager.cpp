@@ -280,15 +280,15 @@ void SystemManager::init()
     // User Interface
     // ----------------------------------------
 
+    LOG_INFO(SYSTEM, SYSTEM, "Before UIManager::init()");
+
     if (!UIManager::init())
     {
-        LOG_ERROR(
-            SYSTEM,
-            HARDWARE,
-            "UI initialization failed");
-
+        LOG_ERROR(SYSTEM, SYSTEM, "UIManager initialization failed");
         return;
     }
+
+    LOG_INFO(SYSTEM, SYSTEM, "After UIManager::init()");
 
     // ----------------------------------------
     // HTTP server

@@ -36,6 +36,10 @@ struct UIModel
 
     uint8_t wifi_signal_percent;
 
+    // --------------------------------------------------------
+    // ACCESS POINT
+    // --------------------------------------------------------
+
     bool ap_running;
 
     uint8_t ap_clients;
@@ -55,4 +59,18 @@ struct UIModel
     // --------------------------------------------------------
 
     const char *firmware_version;
+
+    // --------------------------------------------------------
+    // WIFI STATION STATUS
+    // --------------------------------------------------------
+
+    char wifi_ssid[33];
+
+    char wifi_ip_address[16];
+
+    int8_t wifi_rssi;
+
+    uint8_t wifi_channel;
+
+    char wifi_security[16];
 };

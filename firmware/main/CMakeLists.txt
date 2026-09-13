@@ -38,6 +38,7 @@ idf_component_register(
         "wifi/scanner/wifi_scanner.cpp"
         "wifi/analyzer/wifi_analyzer.cpp"
         "wifi/data/wifi_data.cpp"
+        "wifi/status/wifi_status.cpp"
 
         # ====================================================
         # NETWORK
@@ -54,10 +55,14 @@ idf_component_register(
         "ui/startup/startup_animation.cpp"
         "ui/text/text_renderer.cpp"
         "ui/ui_manager.cpp"
-        "ui/screens/home_screen.cpp"
         "ui/theme/ui_theme.cpp"
-        "ui/screens/wifi_screen.cpp"
         "ui/layout/ui_layout.cpp"
+        "ui/screens/home_screen.cpp"
+        "ui/screens/wifi/wifi_screen.cpp"
+        "ui/screens/wifi/wif_status_screen.cpp"
+        "ui/screens/wifi/wifi_scan_screen.cpp"
+        "ui/screens/wifi/wifi_networks_screen.cpp"
+        "ui/screens/wifi/wifi_ap_screen.cpp"
 
         # ====================================================
         # Joystick

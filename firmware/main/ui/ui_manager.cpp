@@ -3,7 +3,10 @@
 #include <ctime>
 #include <cstdio>
 
+#include "wifi/status/wifi_status.h"
+
 #include "core/monitoring/temperature/temperature_monitor.h"
+#include "core/logging/logger.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -13,7 +16,8 @@
 
 #include "ui/display/display_manager.h"
 #include "ui/screens/home_screen.h"
-#include "ui/screens/wifi_screen.h"
+#include "ui/screens/wifi/wifi_screen.h"
+#include "ui/screens/wifi/wifi_status_screen.h"
 
 #include "network/ap/ap_manager/ap_manager.h"
 
@@ -27,8 +31,12 @@ namespace
         20;
 
     constexpr uint32_t UI_DATA_UPDATE_INTERVAL_MS =
-    1000;
-    
+        1000;
+
+    // --------------------------------------------------------
+    // TIME
+    // --------------------------------------------------------
+
     void update_time()
     {
         time_t now;
@@ -49,17 +57,27 @@ namespace
             time_info.tm_min);
     }
 
+    // --------------------------------------------------------
+    // TEMPERATURE
+    // --------------------------------------------------------
+
     void update_temperature()
     {
-        float temperature = 0.0f;
+        float temperature =
+            0.0f;
 
         if (TemperatureMonitor::get_celsius(
                 temperature))
         {
             UIManager::get_model().temperature_celsius =
-                static_cast<uint8_t>(temperature);
+                static_cast<uint8_t>(
+                    temperature);
         }
     }
+
+    // --------------------------------------------------------
+    // ACCESS POINT
+    // --------------------------------------------------------
 
     void update_ap()
     {
@@ -73,11 +91,105 @@ namespace
             ConfigManager::get_ap_config().max_connections;
     }
 
+    // --------------------------------------------------------
+    // WIFI STATION STATUS
+    // --------------------------------------------------------
+
+    void update_wifi_status()
+    {
+        WiFiStatus::update();
+
+        const WiFiStatus::Info &info =
+            WiFiStatus::get_info();
+
+        UIModel &model =
+            UIManager::get_model();
+
+        model.wifi_enabled =
+            info.enabled;
+
+        model.wifi_connected =
+            info.connected;
+
+        model.wifi_rssi =
+            info.rssi;
+
+        model.wifi_channel =
+            info.channel;
+
+        // ----------------------------------------------------
+        // Convert RSSI to approximate signal percentage
+        // ----------------------------------------------------
+
+        model.wifi_signal_percent =
+            0;
+
+        if (info.enabled &&
+            info.connected)
+        {
+            int signal_percent =
+                2 * (
+                    static_cast<int>(
+                        info.rssi) + 100);
+
+            if (signal_percent < 0)
+            {
+                signal_percent =
+                    0;
+            }
+
+            if (signal_percent > 100)
+            {
+                signal_percent =
+                    100;
+            }
+
+            model.wifi_signal_percent =
+                static_cast<uint8_t>(
+                    signal_percent);
+        }
+
+        // ----------------------------------------------------
+        // SSID
+        // ----------------------------------------------------
+
+        std::snprintf(
+            model.wifi_ssid,
+            sizeof(model.wifi_ssid),
+            "%s",
+            info.ssid);
+
+        // ----------------------------------------------------
+        // IP address
+        // ----------------------------------------------------
+
+        std::snprintf(
+            model.wifi_ip_address,
+            sizeof(model.wifi_ip_address),
+            "%s",
+            info.ip_address);
+
+        // ----------------------------------------------------
+        // Security
+        // ----------------------------------------------------
+
+        std::snprintf(
+            model.wifi_security,
+            sizeof(model.wifi_security),
+            "%s",
+            info.security);
+    }
+
+    // --------------------------------------------------------
+    // UPTIME
+    // --------------------------------------------------------
+
     void update_uptime()
     {
         UIManager::get_model().uptime_seconds =
             static_cast<uint32_t>(
-                esp_timer_get_time() / 1000000ULL);
+                esp_timer_get_time() /
+                1000000ULL);
     }
 
     // --------------------------------------------------------
@@ -108,10 +220,20 @@ namespace
                 update_time();
                 update_temperature();
                 update_ap();
+                update_wifi_status();
                 update_uptime();
 
+                /*
+                 * The Home screen is refreshed periodically
+                 * because it displays live system information.
+                 *
+                 * Other screens are rendered when navigation
+                 * changes the active screen.
+                 */
                 if (UIManager::get_screen() ==
-                    UIScreen::HOME)
+                        UIScreen::HOME ||
+                    UIManager::get_screen() ==
+                        UIScreen::WIFI_STATUS)
                 {
                     UIManager::render();
                 }
@@ -127,6 +249,10 @@ namespace
 // ------------------------------------------------------------
 // UI STATE
 // ------------------------------------------------------------
+//
+// The designated initializers follow the exact field order
+// declared in UIModel.
+// ------------------------------------------------------------
 
 UIModel UIManager::model =
 {
@@ -135,19 +261,29 @@ UIModel UIManager::model =
     // --------------------------------------------------------
 
     .temperature_celsius = 42,
+
     .uptime_seconds = 0,
+
     .time = "23:47",
 
     // --------------------------------------------------------
-    // NETWORK
+    // WIFI
     // --------------------------------------------------------
 
     .wifi_enabled = true,
+
     .wifi_connected = true,
+
     .wifi_signal_percent = 100,
 
+    // --------------------------------------------------------
+    // ACCESS POINT
+    // --------------------------------------------------------
+
     .ap_running = true,
+
     .ap_clients = 3,
+
     .ap_max_connections = 3,
 
     // --------------------------------------------------------
@@ -155,13 +291,28 @@ UIModel UIManager::model =
     // --------------------------------------------------------
 
     .bluetooth_enabled = false,
+
     .bluetooth_connected = false,
 
     // --------------------------------------------------------
     // FIRMWARE
     // --------------------------------------------------------
 
-    .firmware_version = "v1.0.0"
+    .firmware_version = "v1.0.0",
+
+    // --------------------------------------------------------
+    // WIFI STATION STATUS
+    // --------------------------------------------------------
+
+    .wifi_ssid = "",
+
+    .wifi_ip_address = "",
+
+    .wifi_rssi = 0,
+
+    .wifi_channel = 0,
+
+    .wifi_security = ""
 };
 
 UIScreen UIManager::current_screen =
@@ -179,16 +330,24 @@ bool UIManager::initialized =
 
 bool UIManager::init()
 {
+    LOG_INFO(SYSTEM, HARDWARE, "UIManager::init() entered");
+
     if (initialized)
     {
+        LOG_INFO(SYSTEM, HARDWARE, "UIManager already initialized");
         return true;
     }
+
+    LOG_INFO(SYSTEM, HARDWARE, "Checking DisplayManager");
 
     if (!DisplayManager::is_initialized() ||
         !DisplayManager::has_driver())
     {
+        LOG_ERROR(SYSTEM, HARDWARE, "DisplayManager is not initialized or has no driver");
         return false;
     }
+
+    LOG_INFO(SYSTEM, HARDWARE, "DisplayManager check passed");
 
     current_screen =
         UIScreen::HOME;
@@ -196,8 +355,18 @@ bool UIManager::init()
     wifi_menu_item =
         WiFiMenuItem::STATUS;
 
+    LOG_INFO(SYSTEM, WIFI, "Initializing WiFiStatus");
+
+    WiFiStatus::init();
+
+    LOG_INFO(SYSTEM, WIFI, "WiFiStatus initialized");
+
     initialized =
         true;
+
+    LOG_INFO(SYSTEM, HARDWARE, "UIManager marked initialized");
+
+    LOG_INFO(SYSTEM, HARDWARE, "Creating UI task");
 
     BaseType_t task_result =
         xTaskCreate(
@@ -208,15 +377,24 @@ bool UIManager::init()
             5,
             nullptr);
 
+    LOG_INFO(
+        SYSTEM,
+        HARDWARE,
+        "xTaskCreate returned: %d",
+        static_cast<int>(task_result));
+
     if (task_result != pdPASS)
     {
+        LOG_ERROR(SYSTEM, HARDWARE, "Failed to create UI task");
+
         initialized =
             false;
 
         return false;
     }
 
-    render();
+    LOG_INFO(SYSTEM, HARDWARE, "UI task created successfully");
+    LOG_INFO(SYSTEM, HARDWARE, "UIManager initialization complete");
 
     return true;
 }
@@ -259,7 +437,7 @@ void UIManager::update()
     if (new_direction)
     {
         // ----------------------------------------------------
-        // MAIN SCREEN
+        // HOME SCREEN
         // ----------------------------------------------------
 
         if (current_screen ==
@@ -277,7 +455,7 @@ void UIManager::update()
         }
 
         // ----------------------------------------------------
-        // WIFI MAIN
+        // WIFI MAIN SCREEN
         // ----------------------------------------------------
 
         else if (current_screen ==
@@ -361,26 +539,35 @@ void UIManager::update()
                 switch (wifi_menu_item)
                 {
                     case WiFiMenuItem::STATUS:
+
                         current_screen =
                             UIScreen::WIFI_STATUS;
+
                         break;
 
                     case WiFiMenuItem::SCAN:
+
                         current_screen =
                             UIScreen::WIFI_SCAN;
+
                         break;
 
                     case WiFiMenuItem::NETWORKS:
+
                         current_screen =
                             UIScreen::WIFI_NETWORKS;
+
                         break;
 
                     case WiFiMenuItem::AP:
+
                         current_screen =
                             UIScreen::WIFI_AP;
+
                         break;
 
                     case WiFiMenuItem::COUNT:
+
                         break;
                 }
 
@@ -418,13 +605,13 @@ void UIManager::update()
         current_direction;
 
     // --------------------------------------------------------
-    // SELECT
+    // SELECT BUTTON
     // --------------------------------------------------------
 
     if (joystick.pressed_event)
     {
         // ----------------------------------------------------
-        // WIFI MAIN
+        // WIFI MAIN SCREEN
         // ----------------------------------------------------
 
         if (current_screen ==
@@ -441,16 +628,13 @@ void UIManager::update()
         }
 
         // ----------------------------------------------------
-        // WIFI SCAN
+        // WIFI SCAN SCREEN
         // ----------------------------------------------------
 
         else if (current_screen ==
                  UIScreen::WIFI_SCAN)
         {
-            // ------------------------------------------------
-            // Scan action will be connected to WiFiManager
-            // later.
-            // ------------------------------------------------
+            // Wi-Fi scan action will be connected later.
         }
     }
 
@@ -496,27 +680,20 @@ void UIManager::render()
 
         case UIScreen::WIFI_STATUS:
 
-            WiFiScreen::render_status(
+            WiFiStatusScreen::render(
                 model);
 
             break;
 
         case UIScreen::WIFI_SCAN:
-
-            WiFiScreen::render_scan();
-
-            break;
-
         case UIScreen::WIFI_NETWORKS:
-
-            WiFiScreen::render_networks();
-
-            break;
-
         case UIScreen::WIFI_AP:
 
-            WiFiScreen::render_ap(
-                model);
+            // These screens will be implemented later.
+            DisplayManager::clear(
+                0x000000);
+
+            DisplayManager::update();
 
             break;
 

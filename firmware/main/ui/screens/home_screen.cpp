@@ -7,6 +7,7 @@
 #include "ui/text/text_renderer.h"
 #include "ui/theme/ui_theme.h"
 
+#include "core/logging/logger.h"
 // ------------------------------------------------------------
 // HOME SCREEN CONFIGURATION
 // ------------------------------------------------------------
@@ -348,11 +349,16 @@ namespace
 void HomeScreen::render(
     const UIModel &model)
 {
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen::render() entered");
+
     if (!DisplayManager::is_initialized() ||
         !DisplayManager::has_driver())
     {
+        LOG_ERROR(SYSTEM, HARDWARE, "HomeScreen render aborted: DisplayManager not initialized or no driver");
         return;
     }
+
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen DisplayManager check passed");
 
     // --------------------------------------------------------
     // COLORS
@@ -370,6 +376,8 @@ void HomeScreen::render(
     const uint32_t disabled =
         UITheme::disabled();
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen colors loaded");
+
     // --------------------------------------------------------
     // LAYOUT
     // --------------------------------------------------------
@@ -377,12 +385,18 @@ void HomeScreen::render(
     const HomeLayout layout =
         calculate_layout();
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen layout calculated");
+
     // --------------------------------------------------------
     // BACKGROUND
     // --------------------------------------------------------
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen clearing display");
+
     DisplayManager::clear(
         background);
+
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen display cleared");
 
     // --------------------------------------------------------
     // HEADER
@@ -394,6 +408,8 @@ void HomeScreen::render(
         TextSize::SMALL,
         primary);
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen header drawn");
+
     // --------------------------------------------------------
     // TIME
     // --------------------------------------------------------
@@ -403,6 +419,8 @@ void HomeScreen::render(
         layout.time_y,
         TextSize::LARGE,
         primary);
+
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen time drawn");
 
     // --------------------------------------------------------
     // TEMPERATURE
@@ -429,6 +447,8 @@ void HomeScreen::render(
         TextSize::SMALL,
         primary);
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen temperature drawn");
+
     // --------------------------------------------------------
     // WIFI
     // --------------------------------------------------------
@@ -449,6 +469,8 @@ void HomeScreen::render(
         model.wifi_enabled
             ? primary
             : disabled);
+
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen WiFi drawn");
 
     // --------------------------------------------------------
     // BLUETOOTH
@@ -488,6 +510,8 @@ void HomeScreen::render(
         primary,
         disabled);
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen AP drawn");
+
     // --------------------------------------------------------
     // UPTIME
     // --------------------------------------------------------
@@ -526,6 +550,8 @@ void HomeScreen::render(
         TextSize::SMALL,
         primary);
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen uptime drawn");
+
     // --------------------------------------------------------
     // FOOTER
     // --------------------------------------------------------
@@ -536,9 +562,15 @@ void HomeScreen::render(
         TextSize::SMALL,
         disabled);
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen footer drawn");
+
     // --------------------------------------------------------
     // UPDATE DISPLAY
     // --------------------------------------------------------
 
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen updating display");
+
     DisplayManager::update();
+
+    LOG_INFO(SYSTEM, HARDWARE, "HomeScreen::render() complete");
 }
