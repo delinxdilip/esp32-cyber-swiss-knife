@@ -1,0 +1,76 @@
+#pragma once
+
+#include <cstdint>
+
+// ------------------------------------------------------------
+// UI MODEL
+// ------------------------------------------------------------
+//
+// This structure contains the information required by the UI.
+//
+// During UI development this uses dummy values.
+// Later these fields will be populated from the real
+// firmware managers.
+//
+// ------------------------------------------------------------
+
+struct UIModel
+{
+    // --------------------------------------------------------
+    // SYSTEM
+    // --------------------------------------------------------
+
+    uint8_t temperature_celsius;
+
+    uint32_t uptime_seconds;
+
+    char time[6];
+
+    // --------------------------------------------------------
+    // NETWORK
+    // --------------------------------------------------------
+
+    bool wifi_enabled;
+
+    bool wifi_connected;
+
+    uint8_t wifi_signal_percent;
+
+    // --------------------------------------------------------
+    // ACCESS POINT
+    // --------------------------------------------------------
+
+    bool ap_running;
+
+    uint8_t ap_clients;
+
+    uint8_t ap_max_connections;
+
+    // --------------------------------------------------------
+    // BLUETOOTH
+    // --------------------------------------------------------
+
+    bool bluetooth_enabled;
+
+    bool bluetooth_connected;
+
+    // --------------------------------------------------------
+    // FIRMWARE
+    // --------------------------------------------------------
+
+    const char *firmware_version;
+
+    // --------------------------------------------------------
+    // WIFI STATION STATUS
+    // --------------------------------------------------------
+
+    char wifi_ssid[33];
+
+    char wifi_ip_address[16];
+
+    int8_t wifi_rssi;
+
+    uint8_t wifi_channel;
+
+    char wifi_security[16];
+};

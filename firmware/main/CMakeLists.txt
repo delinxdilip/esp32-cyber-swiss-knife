@@ -38,6 +38,7 @@ idf_component_register(
         "wifi/scanner/wifi_scanner.cpp"
         "wifi/analyzer/wifi_analyzer.cpp"
         "wifi/data/wifi_data.cpp"
+        "wifi/status/wifi_status.cpp"
 
         # ====================================================
         # NETWORK
@@ -48,7 +49,25 @@ idf_component_register(
         # ====================================================
         # UI
         # ====================================================
-        "ui/display/gc9a01_display.cpp"
+        "ui/display/display_manager.cpp"
+        "ui/display/drivers/gc9a01/gc9a01_driver.cpp"
+        "ui/display/display_test.cpp"
+        "ui/startup/startup_animation.cpp"
+        "ui/text/text_renderer.cpp"
+        "ui/ui_manager.cpp"
+        "ui/theme/ui_theme.cpp"
+        "ui/layout/ui_layout.cpp"
+        "ui/screens/home_screen.cpp"
+        "ui/screens/wifi/wifi_screen.cpp"
+        "ui/screens/wifi/wif_status_screen.cpp"
+        "ui/screens/wifi/wifi_scan_screen.cpp"
+        "ui/screens/wifi/wifi_networks_screen.cpp"
+        "ui/screens/wifi/wifi_ap_screen.cpp"
+
+        # ====================================================
+        # Joystick
+        # ====================================================
+        "hardware/input/joystick/joystick_manager.cpp"
 
     INCLUDE_DIRS
         "."
