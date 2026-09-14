@@ -246,6 +246,518 @@
 
             </details>
 
+            <details class="config-accordion">
+
+                <summary>
+
+                    <span>
+
+                        <span class="eyebrow">
+                            DISPLAY
+                        </span>
+
+                        <strong>
+                            TFT Display
+                        </strong>
+
+                        <small>
+                            Screen controller, orientation, touch, and accent colour.
+                        </small>
+
+                    </span>
+
+                    <span class="accordion-icon"></span>
+
+                </summary>
+
+                <div class="config-section-body">
+
+                    <div class="field toggle-field">
+
+                        <label for="tft-enabled">
+                            Enable Display
+                        </label>
+
+                        <label class="switch">
+
+                            <input
+                                id="tft-enabled"
+                                type="checkbox"
+                                checked>
+
+                            <span class="switch-slider"></span>
+
+                        </label>
+
+                        <small>
+                            Enable the connected TFT display at startup.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="tft-controller">
+                            Controller
+                        </label>
+
+                        <select
+                            id="tft-controller"
+                            disabled>
+
+                            <option value="0">
+                                GC9A01
+                            </option>
+
+                        </select>
+
+                        <small>
+                            The currently supported display controller.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="tft-shape">
+                            Display Shape
+                        </label>
+
+                        <select
+                            id="tft-shape"
+                            disabled>
+
+                            <option value="0">
+                                Round
+                            </option>
+
+                        </select>
+
+                        <small>
+                            Physical shape of the installed display.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="tft-width">
+                            Resolution
+                        </label>
+
+                        <div class="resolution-inputs">
+
+                            <input
+                                id="tft-width"
+                                type="number"
+                                value="240"
+                                readonly>
+
+                            <span>×</span>
+
+                            <input
+                                id="tft-height"
+                                type="number"
+                                value="240"
+                                readonly>
+
+                        </div>
+
+                        <small>
+                            Native resolution for the round GC9A01 display.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="tft-rotation">
+                            Rotation
+                        </label>
+
+                        <select id="tft-rotation">
+
+                            <option value="0">
+                                0°
+                            </option>
+
+                            <option value="1">
+                                90°
+                            </option>
+
+                            <option value="2">
+                                180°
+                            </option>
+
+                            <option value="3">
+                                270°
+                            </option>
+
+                        </select>
+
+                        <small>
+                            Rotation applied to the display interface.
+                        </small>
+
+                    </div>
+
+                    <div class="field toggle-field">
+
+                        <label for="tft-touch">
+                            Touch Input
+                        </label>
+
+                        <label class="switch">
+
+                            <input
+                                id="tft-touch"
+                                type="checkbox">
+
+                            <span class="switch-slider"></span>
+
+                        </label>
+
+                        <small>
+                            Enable only when a compatible touch controller is installed.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="tft-color">
+                            Accent Colour
+                        </label>
+
+                        <input
+                            id="tft-color"
+                            type="color"
+                            value="#ff5c00">
+
+                        <small>
+                            Default display accent colour.
+                        </small>
+
+                    </div>
+
+                    <p class="config-section-note">
+                        TFT API integration pending.
+                    </p>
+
+                </div>
+
+            </details>
+
+
+            <details class="config-accordion">
+
+                <summary>
+
+                    <span>
+
+                        <span class="eyebrow">
+                            IDENTITY
+                        </span>
+
+                        <strong>
+                            Device
+                        </strong>
+
+                        <small>
+                            Device name, web interface identity, discovery, and Bluetooth name.
+                        </small>
+
+                    </span>
+
+                    <span class="accordion-icon"></span>
+
+                </summary>
+
+                <div class="config-section-body">
+
+                    <div class="field">
+
+                        <label for="device-name">
+                            Device Name
+                        </label>
+
+                        <input
+                            id="device-name"
+                            type="text"
+                            maxlength="32"
+                            value="CyberSwissKnife">
+
+                        <small>
+                            1–32 characters. Used as the device identity.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="web-ui-title">
+                            Web UI Title
+                        </label>
+
+                        <input
+                            id="web-ui-title"
+                            type="text"
+                            maxlength="64"
+                            value="ESP32 Cyber Swiss Knife">
+
+                        <small>
+                            1–64 characters. Displayed by the web interface.
+                        </small>
+
+                    </div>
+
+                    <div class="field toggle-field">
+
+                        <label for="ap-identification">
+                            AP Identification
+                        </label>
+
+                        <label class="switch">
+
+                            <input
+                                id="ap-identification"
+                                type="checkbox"
+                                checked>
+
+                            <span class="switch-slider"></span>
+
+                        </label>
+
+                        <small>
+                            Include device identification on the access point.
+                        </small>
+
+                    </div>
+
+                    <div class="field toggle-field">
+
+                        <label for="device-discovery">
+                            Device Discovery
+                        </label>
+
+                        <label class="switch">
+
+                            <input
+                                id="device-discovery"
+                                type="checkbox"
+                                checked>
+
+                            <span class="switch-slider"></span>
+
+                        </label>
+
+                        <small>
+                            Allow local device discovery.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="bluetooth-name">
+                            Bluetooth Name
+                        </label>
+
+                        <input
+                            id="bluetooth-name"
+                            type="text"
+                            maxlength="32"
+                            value="CyberSwissKnife">
+
+                        <small>
+                            1–32 characters. Used when Bluetooth support is enabled.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="theme-color">
+                            TFT Theme Colour
+                        </label>
+
+                        <input
+                            id="theme-color"
+                            type="color"
+                            value="#ff5c00">
+
+                        <small>
+                            Global colour used by the device display theme.
+                        </small>
+
+                    </div>
+
+                    <p class="config-section-note">
+                        Device API integration pending.
+                    </p>
+
+                </div>
+
+            </details>
+
+
+            <details class="config-accordion">
+
+                <summary>
+
+                    <span>
+
+                        <span class="eyebrow">
+                            BOARD
+                        </span>
+
+                        <strong>
+                            Hardware
+                        </strong>
+
+                        <small>
+                            Onboard RGB LED state and assigned GPIO pin.
+                        </small>
+
+                    </span>
+
+                    <span class="accordion-icon"></span>
+
+                </summary>
+
+                <div class="config-section-body">
+
+                    <div class="field toggle-field">
+
+                        <label for="rgb-led-enabled">
+                            Onboard RGB LED
+                        </label>
+
+                        <label class="switch">
+
+                            <input
+                                id="rgb-led-enabled"
+                                type="checkbox"
+                                checked>
+
+                            <span class="switch-slider"></span>
+
+                        </label>
+
+                        <small>
+                            Enable the onboard RGB LED.
+                        </small>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="rgb-led-pin">
+                            RGB LED GPIO
+                        </label>
+
+                        <input
+                            id="rgb-led-pin"
+                            type="number"
+                            min="0"
+                            max="48"
+                            value="48">
+
+                        <small>
+                            Valid ESP32-S3 GPIO range: 0–48.
+                        </small>
+
+                    </div>
+
+                    <p class="config-section-note">
+                        Hardware API integration pending.
+                    </p>
+
+                </div>
+
+            </details>
+
+
+            <details class="config-accordion">
+
+                <summary>
+
+                    <span>
+
+                        <span class="eyebrow">
+                            MAINTENANCE
+                        </span>
+
+                        <strong>
+                            Logging
+                        </strong>
+
+                        <small>
+                            Automatic retention behaviour for system and activity logs.
+                        </small>
+
+                    </span>
+
+                    <span class="accordion-icon"></span>
+
+                </summary>
+
+                <div class="config-section-body">
+
+                    <div class="field toggle-field">
+
+                        <label for="system-auto-clear">
+                            Auto-clear System Logs
+                        </label>
+
+                        <label class="switch">
+
+                            <input
+                                id="system-auto-clear"
+                                type="checkbox"
+                                checked>
+
+                            <span class="switch-slider"></span>
+
+                        </label>
+
+                        <small>
+                            Automatically clear old system log entries.
+                        </small>
+
+                    </div>
+
+                    <div class="field toggle-field">
+
+                        <label for="activity-auto-clear">
+                            Auto-clear Activity Logs
+                        </label>
+
+                        <label class="switch">
+
+                            <input
+                                id="activity-auto-clear"
+                                type="checkbox"
+                                checked>
+
+                            <span class="switch-slider"></span>
+
+                        </label>
+
+                        <small>
+                            Automatically clear old activity log entries.
+                        </small>
+
+                    </div>
+
+                    <p class="config-section-note">
+                        Logging API integration pending.
+                    </p>
+
+                </div>
+
+            </details>
+
         </section>
 
     </main>

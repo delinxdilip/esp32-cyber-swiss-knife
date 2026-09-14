@@ -1022,3 +1022,130 @@
     }
 
 }
+
+.config-accordion + .config-accordion {
+    margin-top: 22px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.config-section-body {
+    margin-top: 24px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.config-section-body .field:first-child {
+    padding-top: 0;
+}
+
+.config-section-note {
+    margin: 18px 0 0;
+    color: var(--text-muted, #8b8b8f);
+    font-size: 12px;
+}
+
+.field input[type="color"] {
+    width: 58px;
+    min-width: 58px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.field select:disabled,
+.field input:read-only {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+.resolution-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 230px;
+}
+
+.resolution-inputs input {
+    min-width: 0;
+}
+
+.resolution-inputs span {
+    color: var(--text-muted, #8b8b8f);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    grid-column: 2;
+    width: 46px;
+    height: 26px;
+    cursor: pointer;
+}
+
+.field .switch input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    transition: background .18s ease, border-color .18s ease;
+}
+
+.switch-slider::after {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text-secondary, #b0b0b5);
+    content: "";
+    transition: transform .18s ease, background .18s ease;
+}
+
+.switch input:checked + .switch-slider {
+    border-color: rgba(99, 211, 145, .45);
+    background: rgba(99, 211, 145, .16);
+}
+
+.switch input:checked + .switch-slider::after {
+    transform: translateX(20px);
+    background: var(--success, #63d391);
+}
+
+.switch input:focus-visible + .switch-slider {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .10);
+}
+
+@media (max-width: 600px) {
+    .config-accordion + .config-accordion {
+        margin-top: 18px;
+        padding-top: 18px;
+    }
+
+    .config-accordion summary {
+        align-items: flex-start;
+    }
+
+    .config-section-body {
+        margin-top: 20px;
+    }
+
+    .switch {
+        align-self: flex-start;
+        width: 46px !important;
+    }
+
+    .resolution-inputs {
+        max-width: none;
+    }
+}
