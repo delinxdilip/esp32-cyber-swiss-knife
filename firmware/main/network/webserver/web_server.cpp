@@ -20,6 +20,7 @@
 
 #include "wifi/data/wifi_data.h"
 #include "wifi/scanner/wifi_scanner.h"
+#include "wifi/status/wifi_status.h"
 
 namespace
 {
@@ -746,6 +747,199 @@ namespace
 
         return get_wifi_networks_handler(
             request);
+    }
+
+    // ============================================================
+    // LIVE DEVICE STATE
+    // ============================================================
+
+    esp_err_t get_state_handler(
+        httpd_req_t *request)
+    {
+        SystemInfoData info{};
+
+        if (!SystemInfo::get(info))
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Failed to collect device state");
+        }
+
+        /*
+         * Wi-Fi state is taken from WiFiStatus instead of
+         * SystemInfo::wifi_state because WiFiStatus provides
+         * the actual enabled/connected station state.
+         */
+        WiFiStatus::update();
+
+        const WiFiStatus::Info &wifi =
+            WiFiStatus::get_info();
+
+        const char *wifi_state =
+            "OFF";
+
+        if (wifi.enabled)
+        {
+            wifi_state =
+                wifi.connected
+                    ? "CONN"
+                    : "ON";
+        }
+
+        /*
+         * Bluetooth is not implemented yet.
+         *
+         * Do not report fake ON/CONN state.
+         */
+        const char *bluetooth_state =
+            "OFF";
+
+        /*
+         * AP state comes directly from APManager.
+         */
+        const bool ap_running =
+            APManager::is_running();
+
+        const uint8_t ap_clients =
+            APManager::get_client_count();
+
+        const APConfig &ap_config =
+            ConfigManager::get_ap_config();
+
+        char temperature[32];
+
+        std::snprintf(
+            temperature,
+            sizeof(temperature),
+            "%.2f",
+            static_cast<double>(
+                info.temperature_celsius));
+
+        char response[512];
+
+        JsonBuilder json(
+            response,
+            sizeof(response));
+
+        bool success = true;
+
+        success =
+            success &&
+            json.begin_object();
+
+        /*
+         * Temperature
+         */
+        success =
+            success &&
+            json.add_raw(
+                "temperature",
+                temperature);
+
+        /*
+         * Uptime
+         */
+        success =
+            success &&
+            json.add_uint(
+                "uptime",
+                static_cast<uint32_t>(
+                    info.uptime_seconds));
+
+        /*
+         * Wi-Fi
+         */
+        success =
+            success &&
+            json.begin_object(
+                "wifi");
+
+        success =
+            success &&
+            json.add_string(
+                "status",
+                wifi_state);
+
+        success =
+            success &&
+            json.end_object();
+
+        /*
+         * Bluetooth
+         */
+        success =
+            success &&
+            json.begin_object(
+                "bluetooth");
+
+        success =
+            success &&
+            json.add_string(
+                "status",
+                bluetooth_state);
+
+        success =
+            success &&
+            json.end_object();
+
+        /*
+         * Access Point
+         */
+        success =
+            success &&
+            json.begin_object(
+                "ap");
+
+        success =
+            success &&
+            json.add_string(
+                "status",
+                ap_running
+                    ? "ON"
+                    : "OFF");
+
+        success =
+            success &&
+            json.add_uint(
+                "clients",
+                ap_running
+                    ? ap_clients
+                    : 0);
+
+        success =
+            success &&
+            json.add_uint(
+                "max_clients",
+                ap_config.max_connections);
+
+        success =
+            success &&
+            json.end_object();
+
+        /*
+         * Root object
+         */
+        success =
+            success &&
+            json.end_object();
+
+        if (!success || !json.valid())
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "State response too large");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_send(
+            request,
+            json.data(),
+            json.size());
     }
 
     esp_err_t get_system_handler(
@@ -1568,6 +1762,18 @@ bool WebServer::init()
     httpd_register_uri_handler(
         server,
         &system_get);
+
+    httpd_uri_t state_get =
+    {
+        .uri = "/api/state",
+        .method = HTTP_GET,
+        .handler = get_state_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &state_get);
 
     httpd_uri_t static_files =
     {
