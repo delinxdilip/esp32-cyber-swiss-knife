@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         saveButton.textContent =
             saving
                 ? "Saving..."
-                : "Save Configuration";
+                : "Save Access Point";
     }
 
 
@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
 
             const config =
-                await CyberSwissKnifeAPI.getConfig();
+                await CyberSwissKnifeAPI.getAPConfig();
 
 
             /*
@@ -314,7 +314,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             try {
 
                 const result =
-                    await CyberSwissKnifeAPI.saveConfig(
+                    await CyberSwissKnifeAPI.saveAPConfig(
                         config
                     );
 

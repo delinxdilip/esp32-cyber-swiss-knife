@@ -92,177 +92,159 @@
 
         <section class="config-card">
 
-            <form id="config-form">
+            <details
+                class="config-accordion"
+                open>
 
-                <div class="field">
+                <summary>
 
-                    <label for="ssid">
-                        Wi-Fi SSID
-                    </label>
+                    <span>
 
-                    <input
-                        id="ssid"
-                        name="ssid"
-                        type="text"
-                        maxlength="32"
-                        autocomplete="off"
-                        placeholder="CyberSwissKnife"
-                        required>
+                        <span class="eyebrow">
+                            NETWORK
+                        </span>
 
-                    <small>
-                        1–32 characters.
-                    </small>
+                        <strong>
+                            Access Point
+                        </strong>
 
-                </div>
+                        <small>
+                            Wi-Fi name, password, client limit, and channel.
+                        </small>
 
+                    </span>
 
-                <div class="field">
+                    <span class="accordion-icon"></span>
 
-                    <label for="password">
-                        Wi-Fi Password
-                    </label>
+                </summary>
 
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        minlength="8"
-                        maxlength="64"
-                        autocomplete="new-password"
-                        placeholder="Leave blank to keep current password">
+                <form id="config-form">
 
-                    <small>
-                        Leave blank to keep the
-                        current password.
-                    </small>
+                    <div class="field">
 
-                </div>
+                        <label for="ssid">
+                            Wi-Fi SSID
+                        </label>
 
+                        <input
+                            id="ssid"
+                            name="ssid"
+                            type="text"
+                            maxlength="32"
+                            autocomplete="off"
+                            placeholder="CyberSwissKnife"
+                            required>
 
-                <div class="field">
+                        <small>
+                            1–32 characters.
+                        </small>
 
-                    <label for="max-connections">
-                        Maximum Devices
-                    </label>
+                    </div>
 
-                    <input
-                        id="max-connections"
-                        name="max_connections"
-                        type="number"
-                        min="1"
-                        max="10"
-                        value="4"
-                        required>
+                    <div class="field">
 
-                    <small>
-                        Maximum number of clients
-                        allowed on the AP.
-                    </small>
+                        <label for="password">
+                            Wi-Fi Password
+                        </label>
 
-                </div>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            minlength="8"
+                            maxlength="64"
+                            autocomplete="new-password"
+                            placeholder="Leave blank to keep current password">
 
+                        <small>
+                            Leave blank to keep the current password.
+                        </small>
 
-                <div class="field">
+                    </div>
 
-                    <label for="channel">
-                        Wi-Fi Channel
-                    </label>
+                    <div class="field">
 
-                    <select
-                        id="channel"
-                        name="channel">
+                        <label for="max-connections">
+                            Maximum Devices
+                        </label>
 
-                        <option value="1">
-                            Channel 1
-                        </option>
+                        <input
+                            id="max-connections"
+                            name="max_connections"
+                            type="number"
+                            min="1"
+                            max="10"
+                            value="4"
+                            required>
 
-                        <option value="2">
-                            Channel 2
-                        </option>
+                        <small>
+                            Maximum number of clients allowed on the AP.
+                        </small>
 
-                        <option value="3">
-                            Channel 3
-                        </option>
+                    </div>
 
-                        <option value="4">
-                            Channel 4
-                        </option>
+                    <div class="field">
 
-                        <option value="5">
-                            Channel 5
-                        </option>
+                        <label for="channel">
+                            Wi-Fi Channel
+                        </label>
 
-                        <option value="6">
-                            Channel 6
-                        </option>
+                        <select
+                            id="channel"
+                            name="channel">
 
-                        <option value="7">
-                            Channel 7
-                        </option>
+                            <option value="1">Channel 1</option>
+                            <option value="2">Channel 2</option>
+                            <option value="3">Channel 3</option>
+                            <option value="4">Channel 4</option>
+                            <option value="5">Channel 5</option>
+                            <option value="6">Channel 6</option>
+                            <option value="7">Channel 7</option>
+                            <option value="8">Channel 8</option>
+                            <option value="9">Channel 9</option>
+                            <option value="10">Channel 10</option>
+                            <option value="11">Channel 11</option>
+                            <option value="12">Channel 12</option>
+                            <option value="13">Channel 13</option>
 
-                        <option value="8">
-                            Channel 8
-                        </option>
+                        </select>
 
-                        <option value="9">
-                            Channel 9
-                        </option>
+                        <small>
+                            Changing the channel may disconnect connected clients.
+                        </small>
 
-                        <option value="10">
-                            Channel 10
-                        </option>
+                    </div>
 
-                        <option value="11">
-                            Channel 11
-                        </option>
+                    <div class="form-actions">
 
-                        <option value="12">
-                            Channel 12
-                        </option>
+                        <a
+                            class="button secondary"
+                            href="index.html">
 
-                        <option value="13">
-                            Channel 13
-                        </option>
+                            Cancel
 
-                    </select>
+                        </a>
 
-                    <small>
-                        Changing channel may disconnect
-                        connected clients.
-                    </small>
+                        <button
+                            class="button primary"
+                            type="submit">
 
-                </div>
+                            Save Access Point
 
+                        </button>
 
-                <div class="form-actions">
+                    </div>
 
-                    <a
-                        class="button secondary"
-                        href="index.html">
+                    <p
+                        class="form-message"
+                        id="form-message"
+                        role="status"
+                        aria-live="polite">
+                    </p>
 
-                        Cancel
+                </form>
 
-                    </a>
-
-                    <button
-                        class="button primary"
-                        type="submit">
-
-                        Save Configuration
-
-                    </button>
-
-                </div>
-
-
-                <p
-                    class="form-message"
-                    id="form-message"
-                    role="status"
-                    aria-live="polite">
-                </p>
-
-            </form>
+            </details>
 
         </section>
 

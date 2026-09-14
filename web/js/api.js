@@ -28,6 +28,22 @@ const CyberSwissKnifeAPI = {
         return this.request("/api/state");
     },
 
+    async getAPConfig() {
+        return this.request("/api/config/ap");
+    },
+
+    async saveAPConfig(config) {
+        return this.request("/api/config/ap", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(config)
+        });
+    },
+
     async getWifi() {
         return this.request("/api/wifi");
     },
@@ -42,24 +58,7 @@ const CyberSwissKnifeAPI = {
 
     async scanWifi() {
         return this.request("/api/wifi/scan");
-    },
-
-    async getConfig() {
-        return this.request("/api/config");
-    },
-
-    async saveConfig(config) {
-        return this.request("/api/config", {
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify(config)
-        });
     }
 };
 
-window.CyberSwissKnifeAPI =
-    CyberSwissKnifeAPI;
+window.CyberSwissKnifeAPI = CyberSwissKnifeAPI;

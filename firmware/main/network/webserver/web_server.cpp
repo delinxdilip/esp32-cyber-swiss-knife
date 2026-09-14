@@ -1647,7 +1647,7 @@ bool WebServer::init()
         HTTPD_DEFAULT_CONFIG();
 
     config.server_port = 80;
-    config.max_uri_handlers = 16;
+    config.max_uri_handlers = 24;
     config.stack_size = 8192;
     config.lru_purge_enable = true;
 
@@ -1681,7 +1681,7 @@ bool WebServer::init()
 
     httpd_uri_t config_get =
     {
-        .uri = "/api/config",
+        .uri = "/api/config/ap",
         .method = HTTP_GET,
         .handler = get_config_handler,
         .user_ctx = nullptr
@@ -1693,7 +1693,7 @@ bool WebServer::init()
 
     httpd_uri_t config_post =
     {
-        .uri = "/api/config",
+        .uri = "/api/config/ap",
         .method = HTTP_POST,
         .handler = post_config_handler,
         .user_ctx = nullptr

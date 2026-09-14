@@ -455,6 +455,71 @@
 
 }
 
+.config-accordion {
+    width: 100%;
+}
+
+.config-accordion summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.config-accordion summary::-webkit-details-marker {
+    display: none;
+}
+
+.config-accordion summary strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-primary, #ffffff);
+    font-size: 1.15rem;
+    letter-spacing: -.025em;
+}
+
+.config-accordion summary small {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-muted, #8b8b8f);
+    font-size: .8rem;
+}
+
+.accordion-icon {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+}
+
+.accordion-icon::before,
+.accordion-icon::after {
+    position: absolute;
+    top: 8px;
+    left: 1px;
+    width: 16px;
+    height: 1px;
+    background: var(--text-secondary, #b0b0b5);
+    content: "";
+    transition: transform .18s ease;
+}
+
+.accordion-icon::after {
+    transform: rotate(90deg);
+}
+
+.config-accordion[open] .accordion-icon::after {
+    transform: rotate(0);
+}
+
+.config-accordion #config-form {
+    margin-top: 24px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 
 #config-form {
 
