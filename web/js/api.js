@@ -35,11 +35,65 @@ const CyberSwissKnifeAPI = {
     async saveAPConfig(config) {
         return this.request("/api/config/ap", {
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
+            body: JSON.stringify(config)
+        });
+    },
 
+    async getTFTConfig() {
+        return this.request("/api/config/tft");
+    },
+
+    async saveTFTConfig(config) {
+        return this.request("/api/config/tft", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(config)
+        });
+    },
+
+    async getDeviceConfig() {
+        return this.request("/api/config/device");
+    },
+
+    async saveDeviceConfig(config) {
+        return this.request("/api/config/device", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(config)
+        });
+    },
+
+    async getHardwareConfig() {
+        return this.request("/api/config/hardware");
+    },
+
+    async saveHardwareConfig(config) {
+        return this.request("/api/config/hardware", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(config)
+        });
+    },
+
+    async getLoggingConfig() {
+        return this.request("/api/config/logging");
+    },
+
+    async saveLoggingConfig(config) {
+        return this.request("/api/config/logging", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify(config)
         });
     },
