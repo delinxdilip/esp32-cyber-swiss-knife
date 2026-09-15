@@ -120,6 +120,620 @@ namespace
             response);
     }
 
+        bool parse_json_request(
+        httpd_req_t *request,
+        char *body,
+        size_t body_size,
+        JsonParser &parser)
+    {
+        if (request == nullptr ||
+            body == nullptr ||
+            body_size < 2 ||
+            request->content_len == 0 ||
+            request->content_len >= body_size)
+        {
+            return false;
+        }
+
+        size_t received = 0;
+
+        while (received <
+            static_cast<size_t>(
+                request->content_len))
+        {
+            const int result =
+                httpd_req_recv(
+                    request,
+                    body + received,
+                    request->content_len - received);
+
+            if (result <= 0)
+            {
+                if (result ==
+                    HTTPD_SOCK_ERR_TIMEOUT)
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            received +=
+                static_cast<size_t>(
+                    result);
+        }
+
+        body[received] = '\0';
+
+        return parser.parse(
+            body,
+            received);
+    }
+
+    esp_err_t get_tft_config_handler(
+        httpd_req_t *request)
+    {
+        const TFTConfig &config =
+            ConfigManager::get_tft_config();
+
+        char response[256];
+
+        JsonBuilder json(
+            response,
+            sizeof(response));
+
+        const bool success =
+            json.begin_object() &&
+            json.add_bool(
+                "enabled",
+                config.enabled) &&
+            json.add_uint(
+                "controller",
+                static_cast<uint8_t>(
+                    config.controller)) &&
+            json.add_uint(
+                "shape",
+                static_cast<uint8_t>(
+                    config.shape)) &&
+            json.add_uint(
+                "width",
+                config.width) &&
+            json.add_uint(
+                "height",
+                config.height) &&
+            json.add_uint(
+                "rotation",
+                static_cast<uint8_t>(
+                    config.rotation)) &&
+            json.add_bool(
+                "touch",
+                config.touch) &&
+            json.add_uint(
+                "color",
+                config.color) &&
+            json.end_object();
+
+        if (!success || !json.valid())
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "TFT configuration response too large");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_send(
+            request,
+            json.data(),
+            json.size());
+    }
+
+    esp_err_t post_tft_config_handler(
+        httpd_req_t *request)
+    {
+        char body[MAX_REQUEST_BODY + 1];
+
+        JsonParser parser;
+
+        if (!parse_json_request(
+                request,
+                body,
+                sizeof(body),
+                parser))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid TFT configuration request");
+        }
+
+        TFTConfig config =
+            ConfigManager::get_tft_config();
+
+        bool enabled = false;
+        bool touch = false;
+
+        uint32_t controller = 0;
+        uint32_t shape = 0;
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint32_t rotation = 0;
+        uint32_t color = 0;
+
+        if (!parser.get_bool(
+                "enabled",
+                enabled) ||
+            !parser.get_uint(
+                "controller",
+                controller) ||
+            !parser.get_uint(
+                "shape",
+                shape) ||
+            !parser.get_uint(
+                "width",
+                width) ||
+            !parser.get_uint(
+                "height",
+                height) ||
+            !parser.get_uint(
+                "rotation",
+                rotation) ||
+            !parser.get_bool(
+                "touch",
+                touch) ||
+            !parser.get_uint(
+                "color",
+                color))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Missing TFT configuration field");
+        }
+
+        if (controller > UINT8_MAX ||
+            shape > UINT8_MAX ||
+            width > UINT16_MAX ||
+            height > UINT16_MAX ||
+            rotation > UINT8_MAX)
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid TFT configuration value");
+        }
+
+        config.enabled = enabled;
+
+        config.controller =
+            static_cast<TFTController>(
+                controller);
+
+        config.shape =
+            static_cast<TFTShape>(
+                shape);
+
+        config.width =
+            static_cast<uint16_t>(
+                width);
+
+        config.height =
+            static_cast<uint16_t>(
+                height);
+
+        config.rotation =
+            static_cast<TFTRotation>(
+                rotation);
+
+        config.touch = touch;
+        config.color = color;
+
+        if (!ConfigManager::set_tft_config(
+                config))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid or unsaved TFT configuration");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_sendstr(
+            request,
+            "{\"success\":true}");
+    }
+
+    esp_err_t get_device_config_handler(
+        httpd_req_t *request)
+    {
+        const DeviceConfig &config =
+            ConfigManager::get_device_config();
+
+        char response[384];
+
+        JsonBuilder json(
+            response,
+            sizeof(response));
+
+        const bool success =
+            json.begin_object() &&
+            json.add_string(
+                "device_name",
+                config.device_name) &&
+            json.add_string(
+                "web_ui_title",
+                config.web_ui_title) &&
+            json.add_bool(
+                "ap_identification",
+                config.ap_identification) &&
+            json.add_bool(
+                "device_discovery",
+                config.device_discovery) &&
+            json.add_string(
+                "bluetooth_name",
+                config.bluetooth_name) &&
+            json.add_uint(
+                "tft_color_theme",
+                config.tft_color_theme) &&
+            json.end_object();
+
+        if (!success || !json.valid())
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Device configuration response too large");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_send(
+            request,
+            json.data(),
+            json.size());
+    }
+
+    esp_err_t post_device_config_handler(
+        httpd_req_t *request)
+    {
+        char body[MAX_REQUEST_BODY + 1];
+
+        JsonParser parser;
+
+        if (!parse_json_request(
+                request,
+                body,
+                sizeof(body),
+                parser))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid device configuration request");
+        }
+
+        DeviceConfig config =
+            ConfigManager::get_device_config();
+
+        char device_name[
+            sizeof(config.device_name)];
+
+        char web_ui_title[
+            sizeof(config.web_ui_title)];
+
+        char bluetooth_name[
+            sizeof(config.bluetooth_name)];
+
+        bool ap_identification = false;
+        bool device_discovery = false;
+
+        uint32_t tft_color_theme = 0;
+
+        if (!parser.get_string(
+                "device_name",
+                device_name,
+                sizeof(device_name)) ||
+            !parser.get_string(
+                "web_ui_title",
+                web_ui_title,
+                sizeof(web_ui_title)) ||
+            !parser.get_bool(
+                "ap_identification",
+                ap_identification) ||
+            !parser.get_bool(
+                "device_discovery",
+                device_discovery) ||
+            !parser.get_string(
+                "bluetooth_name",
+                bluetooth_name,
+                sizeof(bluetooth_name)) ||
+            !parser.get_uint(
+                "tft_color_theme",
+                tft_color_theme))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Missing device configuration field");
+        }
+
+        std::strncpy(
+            config.device_name,
+            device_name,
+            sizeof(config.device_name) - 1);
+
+        config.device_name[
+            sizeof(config.device_name) - 1] =
+            '\0';
+
+        std::strncpy(
+            config.web_ui_title,
+            web_ui_title,
+            sizeof(config.web_ui_title) - 1);
+
+        config.web_ui_title[
+            sizeof(config.web_ui_title) - 1] =
+            '\0';
+
+        std::strncpy(
+            config.bluetooth_name,
+            bluetooth_name,
+            sizeof(config.bluetooth_name) - 1);
+
+        config.bluetooth_name[
+            sizeof(config.bluetooth_name) - 1] =
+            '\0';
+
+        config.ap_identification =
+            ap_identification;
+
+        config.device_discovery =
+            device_discovery;
+
+        config.tft_color_theme =
+            tft_color_theme;
+
+        if (!ConfigManager::set_device_config(
+                config))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid or unsaved device configuration");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_sendstr(
+            request,
+            "{\"success\":true}");
+    }
+
+    esp_err_t get_hardware_config_handler(
+        httpd_req_t *request)
+    {
+        const HardwareConfig &config =
+            ConfigManager::get_hardware_config();
+
+        char response[128];
+
+        JsonBuilder json(
+            response,
+            sizeof(response));
+
+        const bool success =
+            json.begin_object() &&
+            json.add_bool(
+                "onboard_rgb_led_enabled",
+                config.onboard_rgb_led_enabled) &&
+            json.add_uint(
+                "onboard_rgb_pin",
+                config.onboard_rgb_pin) &&
+            json.end_object();
+
+        if (!success || !json.valid())
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Hardware configuration response too large");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_send(
+            request,
+            json.data(),
+            json.size());
+    }
+
+    esp_err_t post_hardware_config_handler(
+        httpd_req_t *request)
+    {
+        char body[MAX_REQUEST_BODY + 1];
+
+        JsonParser parser;
+
+        if (!parse_json_request(
+                request,
+                body,
+                sizeof(body),
+                parser))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid hardware configuration request");
+        }
+
+        HardwareConfig config =
+            ConfigManager::get_hardware_config();
+
+        bool onboard_rgb_led_enabled =
+            false;
+
+        uint32_t onboard_rgb_pin = 0;
+
+        if (!parser.get_bool(
+                "onboard_rgb_led_enabled",
+                onboard_rgb_led_enabled) ||
+            !parser.get_uint(
+                "onboard_rgb_pin",
+                onboard_rgb_pin))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Missing hardware configuration field");
+        }
+
+        if (onboard_rgb_pin > 48)
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid onboard RGB LED GPIO");
+        }
+
+        config.onboard_rgb_led_enabled =
+            onboard_rgb_led_enabled;
+
+        config.onboard_rgb_pin =
+            static_cast<uint8_t>(
+                onboard_rgb_pin);
+
+        if (!ConfigManager::set_hardware_config(
+                config))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid or unsaved hardware configuration");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_sendstr(
+            request,
+            "{\"success\":true}");
+    }
+
+    esp_err_t get_logging_config_handler(
+        httpd_req_t *request)
+    {
+        const LoggingConfig &config =
+            ConfigManager::get_logging_config();
+
+        char response[128];
+
+        JsonBuilder json(
+            response,
+            sizeof(response));
+
+        const bool success =
+            json.begin_object() &&
+            json.add_bool(
+                "system_auto_clear",
+                config.system_auto_clear) &&
+            json.add_bool(
+                "activity_auto_clear",
+                config.activity_auto_clear) &&
+            json.end_object();
+
+        if (!success || !json.valid())
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Logging configuration response too large");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_send(
+            request,
+            json.data(),
+            json.size());
+    }
+
+    esp_err_t post_logging_config_handler(
+        httpd_req_t *request)
+    {
+        char body[MAX_REQUEST_BODY + 1];
+
+        JsonParser parser;
+
+        if (!parse_json_request(
+                request,
+                body,
+                sizeof(body),
+                parser))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Invalid logging configuration request");
+        }
+
+        LoggingConfig config =
+            ConfigManager::get_logging_config();
+
+        bool system_auto_clear = false;
+        bool activity_auto_clear = false;
+
+        if (!parser.get_bool(
+                "system_auto_clear",
+                system_auto_clear) ||
+            !parser.get_bool(
+                "activity_auto_clear",
+                activity_auto_clear))
+        {
+            return send_json_error(
+                request,
+                "400 Bad Request",
+                "Missing logging configuration field");
+        }
+
+        config.system_auto_clear =
+            system_auto_clear;
+
+        config.activity_auto_clear =
+            activity_auto_clear;
+
+        if (!ConfigManager::set_logging_config(
+                config))
+        {
+            return send_json_error(
+                request,
+                "500 Internal Server Error",
+                "Failed to save logging configuration");
+        }
+
+        httpd_resp_set_type(
+            request,
+            "application/json");
+
+        return httpd_resp_sendstr(
+            request,
+            "{\"success\":true}");
+    }
+
     esp_err_t get_config_handler(
         httpd_req_t *request)
     {
@@ -1690,6 +2304,102 @@ bool WebServer::init()
     httpd_register_uri_handler(
         server,
         &config_get);
+
+        httpd_uri_t tft_config_get =
+    {
+        .uri = "/api/config/tft",
+        .method = HTTP_GET,
+        .handler = get_tft_config_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &tft_config_get);
+
+    httpd_uri_t tft_config_post =
+    {
+        .uri = "/api/config/tft",
+        .method = HTTP_POST,
+        .handler = post_tft_config_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &tft_config_post);
+
+    httpd_uri_t device_config_get =
+    {
+        .uri = "/api/config/device",
+        .method = HTTP_GET,
+        .handler = get_device_config_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &device_config_get);
+
+    httpd_uri_t device_config_post =
+    {
+        .uri = "/api/config/device",
+        .method = HTTP_POST,
+        .handler = post_device_config_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &device_config_post);
+
+    httpd_uri_t hardware_config_get =
+    {
+        .uri = "/api/config/hardware",
+        .method = HTTP_GET,
+        .handler = get_hardware_config_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &hardware_config_get);
+
+    httpd_uri_t hardware_config_post =
+    {
+        .uri = "/api/config/hardware",
+        .method = HTTP_POST,
+        .handler = post_hardware_config_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &hardware_config_post);
+
+    httpd_uri_t logging_config_get =
+    {
+        .uri = "/api/config/logging",
+        .method = HTTP_GET,
+        .handler = get_logging_config_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &logging_config_get);
+
+    httpd_uri_t logging_config_post =
+    {
+        .uri = "/api/config/logging",
+        .method = HTTP_POST,
+        .handler = post_logging_config_handler,
+        .user_ctx = nullptr
+    };
+
+    httpd_register_uri_handler(
+        server,
+        &logging_config_post);
 
     httpd_uri_t config_post =
     {
